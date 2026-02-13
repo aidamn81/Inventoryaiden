@@ -5,36 +5,88 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Inventory</title>
     <style>
-        :root { --primary: #007AFF; --danger: #FF3B30; --bg: #f2f2f7; --card: #ffffff; }
+        :root { --primary: #007AFF; --danger: #FF3B30; --card-bg: #1c1c1e; --text: #ffffff; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; font-family: -apple-system, sans-serif; background: var(--bg); color: #1c1c1e; }
-        .hidden { display: none !important; }
+        
+        body { 
+            margin: 0; font-family: -apple-system, sans-serif; 
+            background: #000000; color: var(--text); 
+            height: 100vh; overflow-x: hidden;
+        }
+        
         header { 
             padding: 15px; display: flex; justify-content: space-between; align-items: center; 
-            background: var(--card); border-bottom: 1px solid #d1d1d6; position: sticky; top: 0; z-index: 100;
+            background: #000; position: sticky; top: 0; z-index: 100;
         }
-        .container { padding: 15px; padding-bottom: 100px; }
-        .card { 
-            background: var(--card); border-radius: 12px; margin-bottom: 12px; 
-            display: flex; align-items: center; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+
+        .container { 
+            padding: 15px; 
+            margin-top: 38px; /* 1cm gap from top */
+            padding-bottom: 100px; 
         }
-        .card-img { width: 85px; height: 85px; background-size: cover; background-position: center; flex-shrink: 0; background-color: #eee; }
-        .card-info { flex: 1; padding: 12px; font-weight: 600; font-size: 17px; }
-        .controls { display: flex; flex-direction: column; gap: 4px; padding: 8px; background: #fafafa; border-left: 1px solid #eee; }
-        .btn-mini { border: none; background: #eee; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer; }
-        .btn-del { color: var(--danger); font-weight: bold; }
-        .modal-bg { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); display:none; align-items:center; justify-content:center; z-index: 1000; }
+
+        /* Location Card */
+        .location-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            height: 140px;
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+
+        /* Left side: Location Details */
+        .loc-main {
+            width: 40%;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #333;
+            position: relative;
+        }
+        .loc-img { height: 70%; background-size: cover; background-position: center; }
+        .loc-name { 
+            height: 30%; display: flex; align-items: center; justify-content: center; 
+            font-size: 14px; font-weight: bold; background: #2c2c2e; text-align: center; padding: 2px;
+        }
+
+        /* Right side: Mini Item List */
+        .loc-items-preview {
+            width: 60%;
+            padding: 8px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            background: #121212;
+        }
+        .mini-item {
+            display: flex; align-items: center; gap: 8px;
+            background: #2c2c2e; padding: 5px; border-radius: 6px; font-size: 12px;
+        }
+        .mini-thumb { width: 30px; height: 30px; border-radius: 4px; background-size: cover; }
+
+        /* Controls */
+        .card-controls {
+            position: absolute; top: 5px; left: 5px; display: flex; gap: 5px;
+        }
+        .btn-tiny { border: none; background: rgba(0,0,0,0.6); color: white; border-radius: 4px; padding: 4px; font-size: 10px; }
+
+        /* General UI */
+        .hidden { display: none !important; }
+        .btn-mini { border: none; background: var(--primary); color: white; border-radius: 8px; padding: 8px 12px; cursor: pointer; }
+        .modal-bg { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); display:none; align-items:center; justify-content:center; z-index: 1000; }
         .modal-bg.active { display: flex; }
-        .modal { background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; }
-        .fab { position: fixed; bottom: 30px; right: 30px; width: 65px; height: 65px; background: var(--primary); color: white; border-radius: 50%; border: none; font-size: 35px; box-shadow: 0 4px 15px rgba(0,122,255,0.4); z-index: 99; }
+        .modal { background: #2c2c2e; padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; color: white; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #444; border-radius: 8px; background: #1c1c1e; color: white; font-size: 16px; }
+        .fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: var(--primary); color: white; border-radius: 50%; border: none; font-size: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
 
 <header>
-    <button id="back-btn" class="btn-mini hidden" onclick="goBack()">← Back</button>
-    <h2 id="title">Locations</h2>
+    <button id="back-btn" class="btn-tiny hidden" onclick="goBack()">← Back</button>
+    <h2 id="title" style="margin:0; font-size: 24px;">Inventory</h2>
     <div style="width:40px"></div>
 </header>
 
@@ -42,25 +94,8 @@
 
 <button class="fab" id="main-fab" onclick="openModal('folder-modal')">+</button>
 
-<div id="folder-modal" class="modal-bg">
-    <div class="modal">
-        <h3>New Location</h3>
-        <input id="f-name" placeholder="Location Name">
-        <input id="f-img" placeholder="Image URL">
-        <button class="btn-mini" style="background:var(--primary); color:white; width:100%; padding:15px; font-size:16px;" onclick="saveFolder()">Create Location</button>
-        <button class="btn-mini" style="width:100%; margin-top:10px; padding:10px;" onclick="closeModals()">Cancel</button>
-    </div>
-</div>
-
-<div id="item-modal" class="modal-bg">
-    <div class="modal">
-        <h3>Add New Item</h3>
-        <input id="i-name" placeholder="Item Name">
-        <input id="i-img" placeholder="Image URL">
-        <button class="btn-mini" style="background:var(--primary); color:white; width:100%; padding:15px; font-size:16px;" onclick="saveItem()">Add to Inventory</button>
-        <button class="btn-mini" style="width:100%; margin-top:10px; padding:10px;" onclick="closeModals()">Cancel</button>
-    </div>
-</div>
+<div id="folder-modal" class="modal-bg"><div class="modal"><h3>New Location</h3><input id="f-name" placeholder="Name"><input id="f-img" placeholder="Image URL"><button class="btn-mini" style="width:100%" onclick="saveFolder()">Create</button><button class="btn-tiny" style="width:100%; margin-top:10px" onclick="closeModals()">Cancel</button></div></div>
+<div id="item-modal" class="modal-bg"><div class="modal"><h3>Add Item</h3><input id="i-name" placeholder="Item Name"><input id="i-img" placeholder="Image URL"><button class="btn-mini" style="width:100%" onclick="saveItem()">Add Item</button><button class="btn-tiny" style="width:100%; margin-top:10px" onclick="closeModals()">Cancel</button></div></div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -84,8 +119,7 @@
     let currentFolderId = null;
 
     onValue(invRef, (snap) => {
-        const data = snap.val();
-        state = data || { folders: [] };
+        state = snap.val() || { folders: [] };
         render();
     });
 
@@ -94,98 +128,81 @@
     window.render = () => {
         const content = document.getElementById('app-content');
         const backBtn = document.getElementById('back-btn');
-        const fab = document.getElementById('main-fab');
         content.innerHTML = '';
 
         if (currentFolderId === null) {
             backBtn.classList.add('hidden');
-            fab.classList.remove('hidden');
-            document.getElementById('title').innerText = "Locations";
-            
-            state.folders.forEach((f, idx) => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-                    <div class="card-img" style="background-image:url('${f.img || ''}')" onclick="openFolder(${f.id})"></div>
-                    <div class="card-info" onclick="openFolder(${f.id})">${f.name}</div>
-                    <div class="controls">
-                        <button class="btn-mini" onclick="move('f', ${idx}, -1)">▲</button>
-                        <button class="btn-mini" onclick="move('f', ${idx}, 1)">▼</button>
-                        <button class="btn-mini btn-del" onclick="deleteObj('f', ${idx})">🗑️</button>
-                    </div>`;
-                content.appendChild(card);
+            document.getElementById('title').innerText = "Inventory";
+            state.folders.forEach((f, fIdx) => {
+                let itemsHtml = (f.items || []).map(i => `
+                    <div class="mini-item">
+                        <div class="mini-thumb" style="background-image:url('${i.img}')"></div>
+                        <span>${i.name}</span>
+                    </div>`).join('');
+                
+                content.innerHTML += `
+                <div class="location-card">
+                    <div class="loc-main" onclick="openFolder(${f.id})">
+                        <div class="card-controls">
+                            <button class="btn-tiny" onclick="event.stopPropagation(); move('f', ${fIdx}, -1)">▲</button>
+                            <button class="btn-tiny" onclick="event.stopPropagation(); deleteObj('f', ${fIdx})">🗑️</button>
+                        </div>
+                        <div class="loc-img" style="background-image:url('${f.img}')"></div>
+                        <div class="loc-name">${f.name}</div>
+                    </div>
+                    <div class="loc-items-preview" onclick="openFolder(${f.id})">
+                        ${itemsHtml || '<div style="color:#666; font-size:10px; text-align:center; margin-top:20px;">Empty</div>'}
+                    </div>
+                </div>`;
             });
         } else {
             backBtn.classList.remove('hidden');
-            fab.classList.add('hidden');
             const folder = state.folders.find(f => f.id === currentFolderId);
             document.getElementById('title').innerText = folder.name;
-            
-            const addBtn = document.createElement('button');
-            addBtn.className = 'btn-mini';
-            addBtn.style = "width:100%; margin-bottom:15px; background:white; height:50px; font-weight:bold; border: 2px dashed #ccc;";
-            addBtn.innerText = "+ Add Item Here";
-            addBtn.onclick = () => openModal('item-modal');
-            content.appendChild(addBtn);
-
-            (folder.items || []).forEach((item, idx) => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-                    <div class="card-img" style="background-image:url('${item.img || ''}')"></div>
-                    <div class="card-info">${item.name}</div>
-                    <div class="controls">
-                        <button class="btn-mini" onclick="move('i', ${idx}, -1)">▲</button>
-                        <button class="btn-mini" onclick="move('i', ${idx}, 1)">▼</button>
-                        <button class="btn-mini btn-del" onclick="deleteObj('i', ${idx})">🗑️</button>
-                    </div>`;
-                content.appendChild(card);
+            content.innerHTML = `<button class="btn-mini" style="width:100%; margin-bottom:15px;" onclick="openModal('item-modal')">+ Add Item</button>`;
+            (folder.items || []).forEach((item, iIdx) => {
+                content.innerHTML += `
+                <div class="location-card" style="height:80px;">
+                    <div class="loc-img" style="width:80px; height:80px; background-image:url('${item.img}')"></div>
+                    <div class="loc-name" style="flex:1; background:none; justify-content:flex-start; padding-left:15px;">${item.name}</div>
+                    <div class="controls" style="display:flex; align-items:center; padding-right:10px;">
+                        <button class="btn-tiny" onclick="deleteObj('i', ${iIdx})">🗑️</button>
+                    </div>
+                </div>`;
             });
         }
     };
 
     window.openFolder = (id) => { currentFolderId = id; render(); };
     window.goBack = () => { currentFolderId = null; render(); };
-    window.openModal = (id) => { document.getElementById(id).classList.add('active'); };
-    window.closeModals = () => { document.querySelectorAll('.modal-bg').forEach(m => m.classList.remove('active')); };
+    window.openModal = (id) => document.getElementById(id).classList.add('active');
+    window.closeModals = () => document.querySelectorAll('.modal-bg').forEach(m => m.classList.remove('active'));
 
     window.saveFolder = () => {
         const name = document.getElementById('f-name').value;
-        const img = document.getElementById('f-img').value;
         if (!name) return;
-        state.folders.push({ id: Date.now(), name, img, items: [] });
-        sync(); 
-        document.getElementById('f-name').value = '';
-        document.getElementById('f-img').value = '';
-        closeModals();
+        state.folders.push({ id: Date.now(), name, img: document.getElementById('f-img').value, items: [] });
+        sync(); closeModals();
     };
 
     window.saveItem = () => {
         const name = document.getElementById('i-name').value;
-        const img = document.getElementById('i-img').value;
         if (!name) return;
         const f = state.folders.find(f => f.id === currentFolderId);
         if (!f.items) f.items = [];
-        f.items.push({ id: Date.now(), name, img });
-        sync();
-        document.getElementById('i-name').value = '';
-        document.getElementById('i-img').value = '';
-        closeModals();
+        f.items.push({ id: Date.now(), name, img: document.getElementById('i-img').value });
+        sync(); closeModals();
     };
 
     window.deleteObj = (type, idx) => {
-        if (!confirm("Delete this permanently?")) return;
-        if (type === 'f') {
-            state.folders.splice(idx, 1);
-        } else {
-            const f = state.folders.find(f => f.id === currentFolderId);
-            f.items.splice(idx, 1);
-        }
+        if (!confirm("Delete?")) return;
+        if (type === 'f') state.folders.splice(idx, 1);
+        else state.folders.find(f => f.id === currentFolderId).items.splice(idx, 1);
         sync();
     };
 
     window.move = (type, idx, dir) => {
-        let list = type === 'f' ? state.folders : state.folders.find(f => f.id === currentFolderId).items;
+        let list = state.folders;
         let newIdx = idx + dir;
         if (newIdx < 0 || newIdx >= list.length) return;
         [list[idx], list[newIdx]] = [list[newIdx], list[idx]];
