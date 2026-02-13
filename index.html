@@ -34,7 +34,7 @@
             align-items: center;
             overflow: hidden;
             border: 1px solid #333;
-            height: 100px; /* Classic height */
+            height: 100px;
         }
 
         .card-img { 
@@ -48,16 +48,24 @@
             display: flex; align-items: center; height: 100%;
         }
 
-        .edit-trigger {
-            padding: 20px; color: #666; font-size: 20px; cursor: pointer;
+        /* Control Panel on Right side of card */
+        .card-controls {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            padding: 5px;
+            border-left: 1px solid #333;
+            height: 100%;
+            width: 50px;
+            background: #121212;
         }
 
-        /* Dashboard Preview List (Nested inside Card) */
-        .preview-list {
-            flex: 1; padding: 5px 10px; font-size: 11px; color: #aaa;
-            display: flex; flex-direction: column; justify-content: center;
-            border-left: 1px solid #333; height: 100%; overflow: hidden;
+        .ctrl-btn {
+            background: none; border: none; color: #007AFF; 
+            font-size: 16px; padding: 5px; cursor: pointer;
         }
+        .ctrl-gear { color: #666; font-size: 18px; }
 
         /* General UI */
         .hidden { display: none !important; }
@@ -136,13 +144,15 @@
             backBtn.classList.add('hidden');
             document.getElementById('title').innerText = "Inventory";
             state.folders.forEach((f, idx) => {
-                const previewText = (f.items || []).slice(0,3).map(i => i.name).join(', ') || 'Empty';
                 content.innerHTML += `
                 <div class="card">
                     <div class="card-img" style="background-image:url('${f.img}')" onclick="openFolder(${f.id})"></div>
                     <div class="card-info" onclick="openFolder(${f.id})">${f.name}</div>
-                    <div class="preview-list" onclick="openFolder(${f.id})">${previewText}...</div>
-                    <div class="edit-trigger" onclick="openEditModal('f', ${idx})">⚙️</div>
+                    <div class="card-controls">
+                        <button class="ctrl-btn" onclick="move('f', ${idx}, -1)">▲</button>
+                        <button class="ctrl-btn ctrl-gear" onclick="openEditModal('f', ${idx})">⚙️</button>
+                        <button class="ctrl-btn" onclick="move('f', ${idx}, 1)">▼</button>
+                    </div>
                 </div>`;
             });
         } else {
@@ -155,10 +165,22 @@
                 <div class="card">
                     <div class="card-img" style="background-image:url('${item.img}')"></div>
                     <div class="card-info">${item.name}</div>
-                    <div class="edit-trigger" onclick="openEditModal('i', ${idx})">⚙️</div>
+                    <div class="card-controls">
+                        <button class="ctrl-btn" onclick="move('i', ${idx}, -1)">▲</button>
+                        <button class="ctrl-btn ctrl-gear" onclick="openEditModal('i', ${idx})">⚙️</button>
+                        <button class="ctrl-btn" onclick="move('i', ${idx}, 1)">▼</button>
+                    </div>
                 </div>`;
             });
         }
+    };
+
+    window.move = (type, idx, dir) => {
+        let list = (type === 'f') ? state.folders : state.folders.find(f => f.id === currentFolderId).items;
+        let newIdx = idx + dir;
+        if (newIdx < 0 || newIdx >= list.length) return;
+        [list[idx], list[newIdx]] = [list[newIdx], list[idx]];
+        sync();
     };
 
     window.openEditModal = (type, idx) => {
@@ -173,10 +195,18 @@
     window.applyEdit = () => {
         const name = document.getElementById('edit-name').value;
         const img = document.getElementById('edit-img').value;
-        if (editingTarget.type === 'f') {
+        if(!name) return;
+
+        if (editingTarget.type === 'new_f') {
+            state.folders.push({ id: Date.now(), name, img, items: [] });
+        } else if (editingTarget.type === 'new_i') {
+            const f = state.folders.find(f => f.id === currentFolderId);
+            if (!f.items) f.items = [];
+            f.items.push({ id: Date.now(), name, img });
+        } else if (editingTarget.type === 'f') {
             state.folders[editingTarget.idx].name = name;
             state.folders[editingTarget.idx].img = img;
-        } else {
+        } else if (editingTarget.type === 'i') {
             const f = state.folders.find(f => f.id === currentFolderId);
             f.items[editingTarget.idx].name = name;
             f.items[editingTarget.idx].img = img;
@@ -194,36 +224,14 @@
     window.openAddModal = () => {
         if (currentFolderId === null) {
             editingTarget = { type: 'new_f' };
-            document.getElementById('edit-name').value = '';
-            document.getElementById('edit-img').value = '';
             document.getElementById('edit-header').innerText = "New Location";
         } else {
             editingTarget = { type: 'new_i' };
-            document.getElementById('edit-name').value = '';
-            document.getElementById('edit-img').value = '';
             document.getElementById('edit-header').innerText = "New Item";
         }
+        document.getElementById('edit-name').value = '';
+        document.getElementById('edit-img').value = '';
         document.getElementById('edit-modal').classList.add('active');
-    };
-
-    // This handles both adding new and saving edits
-    const originalApplyEdit = window.applyEdit;
-    window.applyEdit = () => {
-        const name = document.getElementById('edit-name').value;
-        const img = document.getElementById('edit-img').value;
-        if(!name) return;
-
-        if (editingTarget.type === 'new_f') {
-            state.folders.push({ id: Date.now(), name, img, items: [] });
-        } else if (editingTarget.type === 'new_i') {
-            const f = state.folders.find(f => f.id === currentFolderId);
-            if (!f.items) f.items = [];
-            f.items.push({ id: Date.now(), name, img });
-        } else {
-            originalApplyEdit(); // Run the update logic
-            return;
-        }
-        sync(); closeModals();
     };
 
     window.openFolder = (id) => { currentFolderId = id; render(); };
