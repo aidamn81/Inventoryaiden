@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Visual Inventory Manager</title>
+    <style>
+        :root {
+            --primary-color: #007AFF;
+            --danger-color: #FF3B30;
+            --text-dark: #1C1C1E;
+            --bg-card: rgba(255, 255, 255, 0.95);
+            --shadow: 0 4px 12px rgba(0,0,0,0.1);
+            --radius: 12px;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #000000; background-size: cover; background-position: center;
+            color: var(--text-dark); height: 100vh; overflow: hidden;
+        }
+        .hidden { display: none !important; }
+        .flex { display: flex; align-items: center; }
+        input, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: var(--radius); font-size: 16px; margin-bottom: 10px; background: white; }
+        .btn { border: none; padding: 12px 20px; border-radius: var(--radius); font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.1s; }
+        .btn-primary { background: var(--primary-color); color: white; }
+        .btn-secondary { background: rgba(0,0,0,0.05); color: var(--text-dark); }
+        header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); border-bottom: 1px solid rgba(0,0,0,0.05); z-index: 10; height: 60px; }
+        header h1 { margin: 0; font-size: 22px; font-weight: 800; color: var(--text-dark); }
+        #btn-back { display: none; background: rgba(0,0,0,0.05); color: var(--text-dark); padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 14px; }
+        .view-content { flex: 1; overflow-y: auto; padding: 20px; }
+        .main-container { display: flex; flex-direction: column; gap: 15px; padding-bottom: 80px; }
+        .main-folder-card { display: flex; width: 100%; background: var(--bg-card); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; height: 120px; position: relative; }
+        .main-folder-img { width: 120px; background-size: cover; background-position: center; flex-shrink: 0; }
+        .main-folder-info { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 15px; }
+        .main-folder-title { font-size: 18px; font-weight: 700; margin: 0; }
+        .toolbar { display: flex; gap: 10px; margin-bottom: 20px; }
+        .item-list { display: flex; flex-direction: column; gap: 10px; }
+        .item-card { display: flex; width: 100%; height: 80px; background: white; border-radius: var(--radius); align-items: center; padding: 0 10px; box-shadow: var(--shadow); }
+        .item-thumb-box { width: 80px; height: 80px; border: 2px dashed #ccc; background: white; flex-shrink: 0; margin-right: 15px; display: flex; align-items: center; justify-content: center; background-size: contain; background-repeat: no-repeat; background-position: center; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal { background: white; width: 90%; max-width: 400px; padding: 24px; border-radius: 20px; text-align: center; }
+        .fab-add { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: var(--primary-color); color: white; border-radius: 50%; border: none; font-size: 30px; box-shadow: 0 4px 15px rgba(0,122,255,0.4); z-index: 100; }
+        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: rgba(50, 50, 50, 0.9); color: white; padding: 12px 24px; border-radius: 30px; z-index: 2000; transition: transform 0.3s; }
+        #toast.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+    <div id="toast">Saved</div>
+    <header>
+        <button id="btn-back" onclick="goBack()">← Back</button>
+        <h1 id="page-title">Index</h1>
+    </header>
+
+    <main id="view-dashboard" class="view-content">
+        <div id="main-container" class="main-container"></div>
+    </main>
+
+    <main id="view-folder" class="view-content hidden">
+        <div class="toolbar">
+            <button class="btn btn-primary" onclick="openAddItemModal()">+ Add Item</button>
+        </div>
+        <div id="item-container" class="item-list"></div>
+    </main>
+
+    <button id="fab-add" class="fab-add" onclick="openAddFolderModal()">+</button>
+
+    <div id="modal-folder" class="modal-overlay">
+        <div class="modal">
+            <h3>New Location</h3>
+            <input type="text" id="input-folder-name" placeholder="Name (e.g. Kitchen)">
+            <input type="url" id="input-folder-img" placeholder="pCloud Cover Image URL">
+            <button class="btn btn-primary" onclick="saveFolder()">Create</button>
+            <button class="btn btn-secondary" onclick="closeModal('modal-folder')">Cancel</button>
+        </div>
+    </div>
+
+    <div id="modal-item" class="modal-overlay">
+        <div class="modal">
+            <h3>Add Item</h3>
+            <input type="text" id="input-item-desc" placeholder="Item Name">
+            <input type="url" id="input-item-img" placeholder="pCloud Thumbnail URL">
+            <button class="btn btn-primary" onclick="saveItem()">Save</button>
+            <button class="btn btn-secondary" onclick="closeModal('modal-item')">Cancel</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // Your Firebase Configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyC2sZwT7PeKJHW9LJ4_xdxKMMVxZMrllWg",
+          authDomain: "inventory-8a01f.firebaseapp.com",
+          databaseURL: "https://inventory-8a01f-default-rtdb.europe-west1.firebasedatabase.app",
+          projectId: "inventory-8a01f",
+          storageBucket: "inventory-8a01f.firebasestorage.app",
+          messagingSenderId: "759088447580",
+          appId: "1:759088447580:web:5859088803734d62c2e699",
+          measurementId: "G-34ML906E16"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const invRef = ref(db, 'inventory/');
+
+        // --- State Management ---
+        let appState = { folders: [] };
+        let currentFolderId = null;
+
+        // --- Realtime Sync Engine ---
+        onValue(invRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                appState = data;
+                if (!document.getElementById('view-folder').classList.contains('hidden')) {
+                    renderFolderView(currentFolderId);
+                } else {
+                    renderDashboard();
+                }
+            }
+        });
+
+        function syncToFirebase() {
+            set(invRef, appState);
+            showToast("Syncing...");
+        }
+
+        // --- UI Functions ---
+        window.renderDashboard = function() {
+            const container = document.getElementById('main-container');
+            container.innerHTML = '';
+            if (!appState.folders) return;
+            appState.folders.forEach(f => {
+                const card = document.createElement('div');
+                card.className = 'main-folder-card';
+                card.onclick = () => navigateTo('folder', f.id);
+                card.innerHTML = `
+                    <div class="main-folder-img" style="background-image: url('${f.coverImage || ''}')"></div>
+                    <div class="main-folder-info">
+                        <p class="main-folder-title">${f.title}</p>
+                        <p style="font-size:12px; color:#888;">${f.items ? f.items.length : 0} Items</p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        };
+
+        window.renderFolderView = function(id) {
+            const folder = appState.folders.find(f => f.id === id);
+            const container = document.getElementById('item-container');
+            container.innerHTML = '';
+            if (!folder || !folder.items) return;
+            folder.items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.innerHTML = `
+                    <div class="item-thumb-box" style="background-image: url('${item.image || ''}')"></div>
+                    <div class="item-details"><p>${item.description}</p></div>
+                `;
+                container.appendChild(card);
+            });
+        };
+
+        window.saveFolder = function() {
+            const name = document.getElementById('input-folder-name').value;
+            const img = document.getElementById('input-folder-img').value;
+            if(!name) return;
+            if(!appState.folders) appState.folders = [];
+            appState.folders.push({ id: Date.now(), title: name, coverImage: img, items: [] });
+            syncToFirebase();
+            closeModal('modal-folder');
+        };
+
+        window.saveItem = function() {
+            const desc = document.getElementById('input-item-desc').value;
+            const img = document.getElementById('input-item-img').value;
+            const folder = appState.folders.find(f => f.id === currentFolderId);
+            if (!folder.items) folder.items = [];
+            folder.items.push({ id: Date.now(), description: desc, image: img });
+            syncToFirebase();
+            closeModal('modal-item');
+        };
+
+        window.navigateTo = function(view, id = null) {
+            document.getElementById('view-dashboard').classList.add('hidden');
+            document.getElementById('view-folder').classList.add('hidden');
+            if (view === 'dashboard') {
+                document.getElementById('view-dashboard').classList.remove('hidden');
+                document.getElementById('btn-back').style.display = 'none';
+                document.getElementById('page-title').innerText = "Index";
+            } else {
+                currentFolderId = id;
+                document.getElementById('view-folder').classList.remove('hidden');
+                document.getElementById('btn-back').style.display = 'block';
+                renderFolderView(id);
+            }
+        };
+
+        window.goBack = () => navigateTo('dashboard');
+        window.openAddFolderModal = () => document.getElementById('modal-folder').classList.add('active');
+        window.openAddItemModal = () => document.getElementById('modal-item').classList.add('active');
+        window.closeModal = (id) => document.getElementById(id).classList.remove('active');
+        function showToast(m) { const t=document.getElementById('toast'); t.innerText=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000); }
+    </script>
+</body>
+</html>
