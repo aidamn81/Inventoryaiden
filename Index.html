@@ -20,77 +20,65 @@
             color: var(--text-dark); height: 100vh; overflow: hidden;
         }
         .hidden { display: none !important; }
-        .flex { display: flex; align-items: center; }
-        input, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: var(--radius); font-size: 16px; margin-bottom: 10px; background: white; }
-        .btn { border: none; padding: 12px 20px; border-radius: var(--radius); font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.1s; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: var(--radius); font-size: 16px; margin-bottom: 10px; }
+        .btn { border: none; padding: 12px 20px; border-radius: var(--radius); font-size: 16px; font-weight: 600; cursor: pointer; }
         .btn-primary { background: var(--primary-color); color: white; }
         .btn-secondary { background: rgba(0,0,0,0.05); color: var(--text-dark); }
-        header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); border-bottom: 1px solid rgba(0,0,0,0.05); z-index: 10; height: 60px; }
-        header h1 { margin: 0; font-size: 22px; font-weight: 800; color: var(--text-dark); }
-        #btn-back { display: none; background: rgba(0,0,0,0.05); color: var(--text-dark); padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 14px; }
-        .view-content { flex: 1; overflow-y: auto; padding: 20px; }
-        .main-container { display: flex; flex-direction: column; gap: 15px; padding-bottom: 80px; }
-        .main-folder-card { display: flex; width: 100%; background: var(--bg-card); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; height: 120px; position: relative; }
-        .main-folder-img { width: 120px; background-size: cover; background-position: center; flex-shrink: 0; }
-        .main-folder-info { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 15px; }
-        .main-folder-title { font-size: 18px; font-weight: 700; margin: 0; }
+        
+        header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); height: 60px; }
+        #btn-back { display: none; background: #eee; border: none; padding: 8px 15px; border-radius: 20px; }
+        
+        .view-content { flex: 1; overflow-y: auto; padding: 20px; height: calc(100vh - 60px); }
+        .main-folder-card { display: flex; background: var(--bg-card); border-radius: var(--radius); margin-bottom: 15px; overflow: hidden; height: 100px; box-shadow: var(--shadow); }
+        .main-folder-img { width: 100px; background-size: cover; background-position: center; }
+        .main-folder-info { flex: 1; padding: 15px; display: flex; flex-direction: column; justify-content: center; }
+        
         .toolbar { display: flex; gap: 10px; margin-bottom: 20px; }
-        .item-list { display: flex; flex-direction: column; gap: 10px; }
-        .item-card { display: flex; width: 100%; height: 80px; background: white; border-radius: var(--radius); align-items: center; padding: 0 10px; box-shadow: var(--shadow); }
-        .item-thumb-box { width: 80px; height: 80px; border: 2px dashed #ccc; background: white; flex-shrink: 0; margin-right: 15px; display: flex; align-items: center; justify-content: center; background-size: contain; background-repeat: no-repeat; background-position: center; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
-        .modal-overlay.active { opacity: 1; pointer-events: auto; }
-        .modal { background: white; width: 90%; max-width: 400px; padding: 24px; border-radius: 20px; text-align: center; }
-        .fab-add { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: var(--primary-color); color: white; border-radius: 50%; border: none; font-size: 30px; box-shadow: 0 4px 15px rgba(0,122,255,0.4); z-index: 100; }
-        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: rgba(50, 50, 50, 0.9); color: white; padding: 12px 24px; border-radius: 30px; z-index: 2000; transition: transform 0.3s; }
-        #toast.show { transform: translateX(-50%) translateY(0); }
+        .subfolder-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .sub-card { background: white; aspect-ratio: 1; border-radius: 10px; overflow: hidden; position: relative; border: 1px solid #eee; }
+        .sub-card img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .item-card { display: flex; background: white; padding: 10px; border-radius: 10px; margin-bottom: 10px; align-items: center; box-shadow: var(--shadow); }
+        .item-thumb { width: 60px; height: 60px; background-size: contain; background-repeat: no-repeat; background-position: center; margin-right: 15px; background-color: #f9f9f9; border-radius: 5px; }
+        
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 350px; text-align: center; }
+        .fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: var(--primary-color); color: white; border-radius: 50%; border: none; font-size: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
     </style>
 </head>
 <body>
-    <div id="toast">Saved</div>
+
     <header>
         <button id="btn-back" onclick="goBack()">← Back</button>
         <h1 id="page-title">Index</h1>
+        <div style="width:40px"></div>
     </header>
 
     <main id="view-dashboard" class="view-content">
-        <div id="main-container" class="main-container"></div>
+        <div id="main-container"></div>
     </main>
 
     <main id="view-folder" class="view-content hidden">
         <div class="toolbar">
-            <button class="btn btn-primary" onclick="openAddItemModal()">+ Add Item</button>
+            <button class="btn btn-primary" style="flex:2" onclick="openModal('modal-item')">+ Item</button>
+            <button class="btn btn-secondary" style="flex:1" onclick="openModal('modal-sub')">+ Sub</button>
         </div>
-        <div id="item-container" class="item-list"></div>
+        <div id="sub-grid" class="subfolder-grid"></div>
+        <div id="item-list"></div>
     </main>
 
-    <button id="fab-add" class="fab-add" onclick="openAddFolderModal()">+</button>
+    <button id="fab-add" class="fab" onclick="openModal('modal-main')">+</button>
 
-    <div id="modal-folder" class="modal-overlay">
-        <div class="modal">
-            <h3>New Location</h3>
-            <input type="text" id="input-folder-name" placeholder="Name (e.g. Kitchen)">
-            <input type="url" id="input-folder-img" placeholder="pCloud Cover Image URL">
-            <button class="btn btn-primary" onclick="saveFolder()">Create</button>
-            <button class="btn btn-secondary" onclick="closeModal('modal-folder')">Cancel</button>
-        </div>
-    </div>
-
-    <div id="modal-item" class="modal-overlay">
-        <div class="modal">
-            <h3>Add Item</h3>
-            <input type="text" id="input-item-desc" placeholder="Item Name">
-            <input type="url" id="input-item-img" placeholder="pCloud Thumbnail URL">
-            <button class="btn btn-primary" onclick="saveItem()">Save</button>
-            <button class="btn btn-secondary" onclick="closeModal('modal-item')">Cancel</button>
-        </div>
-    </div>
+    <div id="modal-main" class="modal-overlay"><div class="modal"><h3>New Location</h3><input id="in-m-name" placeholder="Name"><input id="in-m-img" placeholder="Image URL"><button class="btn btn-primary" onclick="addMain()">Create</button><button class="btn" onclick="closeModal('modal-main')">Cancel</button></div></div>
+    <div id="modal-sub" class="modal-overlay"><div class="modal"><h3>New Sub-Folder</h3><input id="in-s-name" placeholder="Name"><input id="in-s-img" placeholder="Image URL"><button class="btn btn-primary" onclick="addSub()">Create</button><button class="btn" onclick="closeModal('modal-sub')">Cancel</button></div></div>
+    <div id="modal-item" class="modal-overlay"><div class="modal"><h3>New Item</h3><input id="in-i-name" placeholder="Item Name"><input id="in-i-img" placeholder="Image URL"><button class="btn btn-primary" onclick="addItem()">Save</button><button class="btn" onclick="closeModal('modal-item')">Cancel</button></div></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // Your Firebase Configuration
+        // Your Firebase config (Linked to your project)
         const firebaseConfig = {
           apiKey: "AIzaSyC2sZwT7PeKJHW9LJ4_xdxKMMVxZMrllWg",
           authDomain: "inventory-8a01f.firebaseapp.com",
@@ -98,112 +86,101 @@
           projectId: "inventory-8a01f",
           storageBucket: "inventory-8a01f.firebasestorage.app",
           messagingSenderId: "759088447580",
-          appId: "1:759088447580:web:5859088803734d62c2e699",
-          measurementId: "G-34ML906E16"
+          appId: "1:759088447580:web:5859088803734d62c2e699"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const invRef = ref(db, 'inventory/');
 
-        // --- State Management ---
         let appState = { folders: [] };
         let currentFolderId = null;
 
-        // --- Realtime Sync Engine ---
+        // --- Sync Data ---
         onValue(invRef, (snapshot) => {
             const data = snapshot.val();
             if (data) {
                 appState = data;
-                if (!document.getElementById('view-folder').classList.contains('hidden')) {
-                    renderFolderView(currentFolderId);
-                } else {
-                    renderDashboard();
-                }
+                currentFolderId ? renderFolder(currentFolderId) : renderIndex();
             }
         });
 
-        function syncToFirebase() {
-            set(invRef, appState);
-            showToast("Syncing...");
-        }
+        function save() { set(invRef, appState); }
 
-        // --- UI Functions ---
-        window.renderDashboard = function() {
+        // --- Logic ---
+        window.renderIndex = function() {
+            navigateTo('dashboard');
             const container = document.getElementById('main-container');
             container.innerHTML = '';
-            if (!appState.folders) return;
-            appState.folders.forEach(f => {
-                const card = document.createElement('div');
-                card.className = 'main-folder-card';
-                card.onclick = () => navigateTo('folder', f.id);
-                card.innerHTML = `
-                    <div class="main-folder-img" style="background-image: url('${f.coverImage || ''}')"></div>
-                    <div class="main-folder-info">
-                        <p class="main-folder-title">${f.title}</p>
-                        <p style="font-size:12px; color:#888;">${f.items ? f.items.length : 0} Items</p>
-                    </div>
-                `;
-                container.appendChild(card);
+            (appState.folders || []).forEach(f => {
+                const div = document.createElement('div');
+                div.className = 'main-folder-card';
+                div.onclick = () => renderFolder(f.id);
+                div.innerHTML = `<div class="main-folder-img" style="background-image:url('${f.img || ''}')"></div><div class="main-folder-info"><b>${f.name}</b></div>`;
+                container.appendChild(div);
             });
-        };
+        }
 
-        window.renderFolderView = function(id) {
-            const folder = appState.folders.find(f => f.id === id);
-            const container = document.getElementById('item-container');
-            container.innerHTML = '';
-            if (!folder || !folder.items) return;
-            folder.items.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'item-card';
-                card.innerHTML = `
-                    <div class="item-thumb-box" style="background-image: url('${item.image || ''}')"></div>
-                    <div class="item-details"><p>${item.description}</p></div>
-                `;
-                container.appendChild(card);
+        window.renderFolder = function(id) {
+            currentFolderId = id;
+            navigateTo('folder');
+            const f = appState.folders.find(x => x.id === id);
+            document.getElementById('page-title').innerText = f.name;
+            
+            const subGrid = document.getElementById('sub-grid');
+            subGrid.innerHTML = '';
+            (f.subs || []).forEach(s => {
+                const sd = document.createElement('div');
+                sd.className = 'sub-card';
+                sd.innerHTML = `<img src="${s.img || ''}"><div style="position:absolute;bottom:0;width:100%;background:rgba(0,0,0,0.6);color:white;font-size:10px;text-align:center">${s.name}</div>`;
+                subGrid.appendChild(sd);
             });
-        };
 
-        window.saveFolder = function() {
-            const name = document.getElementById('input-folder-name').value;
-            const img = document.getElementById('input-folder-img').value;
-            if(!name) return;
+            const list = document.getElementById('item-list');
+            list.innerHTML = '';
+            (f.items || []).forEach(i => {
+                const idiv = document.createElement('div');
+                idiv.className = 'item-card';
+                idiv.innerHTML = `<div class="item-thumb" style="background-image:url('${i.img || ''}')"></div><div><b>${i.name}</b></div>`;
+                list.appendChild(idiv);
+            });
+        }
+
+        window.addMain = () => {
+            const name = document.getElementById('in-m-name').value;
             if(!appState.folders) appState.folders = [];
-            appState.folders.push({ id: Date.now(), title: name, coverImage: img, items: [] });
-            syncToFirebase();
-            closeModal('modal-folder');
-        };
+            appState.folders.push({ id: Date.now(), name, img: document.getElementById('in-m-img').value, items: [], subs: [] });
+            save(); closeModal('modal-main');
+        }
 
-        window.saveItem = function() {
-            const desc = document.getElementById('input-item-desc').value;
-            const img = document.getElementById('input-item-img').value;
-            const folder = appState.folders.find(f => f.id === currentFolderId);
-            if (!folder.items) folder.items = [];
-            folder.items.push({ id: Date.now(), description: desc, image: img });
-            syncToFirebase();
-            closeModal('modal-item');
-        };
+        window.addItem = () => {
+            const f = appState.folders.find(x => x.id === currentFolderId);
+            if(!f.items) f.items = [];
+            f.items.push({ id: Date.now(), name: document.getElementById('in-i-name').value, img: document.getElementById('in-i-img').value });
+            save(); closeModal('modal-item');
+        }
 
-        window.navigateTo = function(view, id = null) {
+        window.addSub = () => {
+            const f = appState.folders.find(x => x.id === currentFolderId);
+            if(!f.subs) f.subs = [];
+            f.subs.push({ id: Date.now(), name: document.getElementById('in-s-name').value, img: document.getElementById('in-s-img').value, items: [] });
+            save(); closeModal('modal-sub');
+        }
+
+        window.navigateTo = (v) => {
             document.getElementById('view-dashboard').classList.add('hidden');
             document.getElementById('view-folder').classList.add('hidden');
-            if (view === 'dashboard') {
-                document.getElementById('view-dashboard').classList.remove('hidden');
-                document.getElementById('btn-back').style.display = 'none';
-                document.getElementById('page-title').innerText = "Index";
-            } else {
-                currentFolderId = id;
-                document.getElementById('view-folder').classList.remove('hidden');
-                document.getElementById('btn-back').style.display = 'block';
-                renderFolderView(id);
-            }
-        };
+            document.getElementById('btn-back').style.display = (v === 'dashboard' ? 'none' : 'block');
+            document.getElementById('fab-add').style.display = (v === 'dashboard' ? 'block' : 'none');
+            document.getElementById('view-' + v).classList.remove('hidden');
+            if(v === 'dashboard') { document.getElementById('page-title').innerText = "Index"; currentFolderId = null; }
+        }
 
-        window.goBack = () => navigateTo('dashboard');
-        window.openAddFolderModal = () => document.getElementById('modal-folder').classList.add('active');
-        window.openAddItemModal = () => document.getElementById('modal-item').classList.add('active');
+        window.goBack = () => renderIndex();
+        window.openModal = (id) => document.getElementById(id).classList.add('active');
         window.closeModal = (id) => document.getElementById(id).classList.remove('active');
-        function showToast(m) { const t=document.getElementById('toast'); t.innerText=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000); }
+
+        renderIndex();
     </script>
 </body>
 </html>
