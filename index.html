@@ -25,7 +25,6 @@
             padding-bottom: 100px; 
         }
 
-        /* Large Thumbnail Style Cards */
         .card {
             background: var(--card-bg);
             border-radius: 15px;
@@ -43,31 +42,31 @@
             flex-shrink: 0; background-color: #2c2c2e;
         }
 
-        .card-info { 
-            flex: 1; padding-left: 15px; font-weight: 600; font-size: 18px;
-            display: flex; align-items: center; height: 100%;
+        /* Middle section for Name and Mini-List */
+        .card-content {
+            flex: 1; height: 100%; display: flex; flex-direction: column;
+            padding: 10px 15px; justify-content: center; overflow: hidden;
         }
 
-        /* Control Panel on Right side of card */
+        .card-name { font-weight: 600; font-size: 16px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .preview-list {
+            font-size: 11px; color: #888; display: flex; flex-wrap: wrap; gap: 5px;
+            max-height: 40px; overflow: hidden;
+        }
+
+        .preview-item { background: #2c2c2e; padding: 2px 6px; border-radius: 4px; }
+
+        /* Control Panel */
         .card-controls {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-around;
-            align-items: center;
-            padding: 5px;
-            border-left: 1px solid #333;
-            height: 100%;
-            width: 50px;
-            background: #121212;
+            display: flex; flex-direction: column; justify-content: space-around;
+            align-items: center; padding: 5px; border-left: 1px solid #333;
+            height: 100%; width: 50px; background: #121212;
         }
 
-        .ctrl-btn {
-            background: none; border: none; color: #007AFF; 
-            font-size: 16px; padding: 5px; cursor: pointer;
-        }
+        .ctrl-btn { background: none; border: none; color: #007AFF; font-size: 16px; padding: 5px; cursor: pointer; }
         .ctrl-gear { color: #666; font-size: 18px; }
 
-        /* General UI */
         .hidden { display: none !important; }
         .btn-mini { border: none; background: var(--primary); color: white; border-radius: 8px; padding: 10px 15px; cursor: pointer; font-weight: bold; }
         .btn-danger { background: var(--danger); }
@@ -99,7 +98,7 @@
         <input id="edit-name" placeholder="Name">
         <input id="edit-img" placeholder="Image URL">
         <div style="display:flex; gap:10px; margin-top:10px;">
-            <button class="btn-mini" style="flex:1" onclick="applyEdit()">Save Changes</button>
+            <button class="btn-mini" style="flex:1" onclick="applyEdit()">Save</button>
             <button class="btn-mini btn-danger" onclick="confirmDelete()">Delete</button>
         </div>
         <button class="btn-mini" style="width:100%; margin-top:10px; background:#444" onclick="closeModals()">Cancel</button>
@@ -126,7 +125,7 @@
 
     let state = { folders: [] };
     let currentFolderId = null;
-    let editingTarget = { type: null, index: null };
+    let editingTarget = { type: null, idx: null };
 
     onValue(invRef, (snap) => {
         state = snap.val() || { folders: [] };
@@ -144,10 +143,14 @@
             backBtn.classList.add('hidden');
             document.getElementById('title').innerText = "Inventory";
             state.folders.forEach((f, idx) => {
+                const itemsList = (f.items || []).slice(0, 4).map(i => `<span class="preview-item">${i.name}</span>`).join('');
                 content.innerHTML += `
                 <div class="card">
                     <div class="card-img" style="background-image:url('${f.img}')" onclick="openFolder(${f.id})"></div>
-                    <div class="card-info" onclick="openFolder(${f.id})">${f.name}</div>
+                    <div class="card-content" onclick="openFolder(${f.id})">
+                        <div class="card-name">${f.name}</div>
+                        <div class="preview-list">${itemsList || 'Empty'}</div>
+                    </div>
                     <div class="card-controls">
                         <button class="ctrl-btn" onclick="move('f', ${idx}, -1)">▲</button>
                         <button class="ctrl-btn ctrl-gear" onclick="openEditModal('f', ${idx})">⚙️</button>
@@ -164,7 +167,9 @@
                 content.innerHTML += `
                 <div class="card">
                     <div class="card-img" style="background-image:url('${item.img}')"></div>
-                    <div class="card-info">${item.name}</div>
+                    <div class="card-content">
+                        <div class="card-name">${item.name}</div>
+                    </div>
                     <div class="card-controls">
                         <button class="ctrl-btn" onclick="move('i', ${idx}, -1)">▲</button>
                         <button class="ctrl-btn ctrl-gear" onclick="openEditModal('i', ${idx})">⚙️</button>
@@ -215,20 +220,15 @@
     };
 
     window.confirmDelete = () => {
-        if (!confirm("Delete this permanently?")) return;
+        if (!confirm("Delete permanently?")) return;
         if (editingTarget.type === 'f') state.folders.splice(editingTarget.idx, 1);
         else state.folders.find(f => f.id === currentFolderId).items.splice(editingTarget.idx, 1);
         sync(); closeModals();
     };
 
     window.openAddModal = () => {
-        if (currentFolderId === null) {
-            editingTarget = { type: 'new_f' };
-            document.getElementById('edit-header').innerText = "New Location";
-        } else {
-            editingTarget = { type: 'new_i' };
-            document.getElementById('edit-header').innerText = "New Item";
-        }
+        editingTarget = { type: currentFolderId === null ? 'new_f' : 'new_i' };
+        document.getElementById('edit-header').innerText = currentFolderId === null ? "New Location" : "New Item";
         document.getElementById('edit-name').value = '';
         document.getElementById('edit-img').value = '';
         document.getElementById('edit-modal').classList.add('active');
