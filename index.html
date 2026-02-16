@@ -7,11 +7,11 @@
     <style>
         :root { --primary: #007AFF; --danger: #FF3B30; --card-bg: #1c1c1e; --text: #ffffff; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; font-family: -apple-system, sans-serif; background: #000; color: var(--text); height: 100vh; }
         
-        body { 
-            margin: 0; font-family: -apple-system, sans-serif; 
-            background: #000000; color: var(--text); 
-            height: 100vh;
+        #login-screen {
+            position: fixed; inset: 0; background: #000; z-index: 2000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
         }
         
         header { 
@@ -19,45 +19,19 @@
             background: #000; position: sticky; top: 0; z-index: 100;
         }
 
-        .container { 
-            padding: 15px; 
-            margin-top: 38px; /* 1cm gap from top */
-            padding-bottom: 100px; 
-        }
+        .container { padding: 15px; margin-top: 38px; padding-bottom: 100px; }
 
         .card {
-            background: var(--card-bg);
-            border-radius: 15px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            overflow: hidden;
-            border: 1px solid #333;
-            height: 100px;
+            background: var(--card-bg); border-radius: 15px; margin-bottom: 15px;
+            display: flex; align-items: center; overflow: hidden; border: 1px solid #333; height: 100px;
         }
 
-        .card-img { 
-            width: 100px; height: 100px; 
-            background-size: cover; background-position: center; 
-            flex-shrink: 0; background-color: #2c2c2e;
-        }
-
-        /* Middle section for Name and Mini-List */
-        .card-content {
-            flex: 1; height: 100%; display: flex; flex-direction: column;
-            padding: 10px 15px; justify-content: center; overflow: hidden;
-        }
-
+        .card-img { width: 100px; height: 100px; background-size: cover; background-position: center; flex-shrink: 0; background-color: #2c2c2e; }
+        .card-content { flex: 1; height: 100%; display: flex; flex-direction: column; padding: 10px 15px; justify-content: center; overflow: hidden; }
         .card-name { font-weight: 600; font-size: 16px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        .preview-list {
-            font-size: 11px; color: #888; display: flex; flex-wrap: wrap; gap: 5px;
-            max-height: 40px; overflow: hidden;
-        }
-
+        .preview-list { font-size: 11px; color: #888; display: flex; flex-wrap: wrap; gap: 5px; max-height: 40px; overflow: hidden; }
         .preview-item { background: #2c2c2e; padding: 2px 6px; border-radius: 4px; }
 
-        /* Control Panel */
         .card-controls {
             display: flex; flex-direction: column; justify-content: space-around;
             align-items: center; padding: 5px; border-left: 1px solid #333;
@@ -82,32 +56,43 @@
 </head>
 <body>
 
-<header>
-    <button id="back-btn" class="btn-mini hidden" style="background:#333" onclick="goBack()">← Back</button>
-    <h2 id="title" style="margin:0;">Inventory</h2>
-    <div style="width:40px"></div>
-</header>
+<div id="login-screen">
+    <h2 style="margin-bottom: 20px;">Inventory Access</h2>
+    <input type="email" id="auth-email" placeholder="Email">
+    <input type="password" id="auth-pass" placeholder="Password">
+    <button class="btn-mini" style="width: 100%;" onclick="handleLogin()">Login</button>
+    <p id="auth-error" style="color: var(--danger); font-size: 14px; margin-top: 15px; text-align: center;"></p>
+</div>
 
-<div class="container" id="app-content"></div>
+<div id="app-body" class="hidden">
+    <header>
+        <button id="back-btn" class="btn-mini hidden" style="background:#333" onclick="goBack()">← Back</button>
+        <h2 id="title" style="margin:0;">Inventory</h2>
+        <button class="btn-mini" style="background:none; color:#666; font-size:10px;" onclick="handleLogout()">Logout</button>
+    </header>
 
-<button class="fab" id="main-fab" onclick="openAddModal()">+</button>
+    <div class="container" id="app-content"></div>
 
-<div id="edit-modal" class="modal-bg">
-    <div class="modal">
-        <h3 id="edit-header">Edit Entry</h3>
-        <input id="edit-name" placeholder="Name">
-        <input id="edit-img" placeholder="Image URL">
-        <div style="display:flex; gap:10px; margin-top:10px;">
-            <button class="btn-mini" style="flex:1" onclick="applyEdit()">Save</button>
-            <button class="btn-mini btn-danger" onclick="confirmDelete()">Delete</button>
+    <button class="fab" id="main-fab" onclick="openAddModal()">+</button>
+
+    <div id="edit-modal" class="modal-bg">
+        <div class="modal">
+            <h3 id="edit-header">Edit Entry</h3>
+            <input id="edit-name" placeholder="Name">
+            <input id="edit-img" placeholder="Image URL">
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button class="btn-mini" style="flex:1" onclick="applyEdit()">Save</button>
+                <button class="btn-mini btn-danger" onclick="confirmDelete()">Delete</button>
+            </div>
+            <button class="btn-mini" style="width:100%; margin-top:10px; background:#444" onclick="closeModals()">Cancel</button>
         </div>
-        <button class="btn-mini" style="width:100%; margin-top:10px; background:#444" onclick="closeModals()">Cancel</button>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyC2sZwT7PeKJHW9LJ4_xdxKMMVxZMrllWg",
@@ -119,18 +104,50 @@
         appId: "1:759088447580:web:5859088803734d62c2e699"
     };
 
+    const AUTHORIZED_UID = "WmMCIqgKBfO3tSGHb0nSa5qBpOc2";
+
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    const auth = getAuth(app);
     const invRef = ref(db, 'inventory/');
 
     let state = { folders: [] };
     let currentFolderId = null;
     let editingTarget = { type: null, idx: null };
 
-    onValue(invRef, (snap) => {
-        state = snap.val() || { folders: [] };
-        render();
+    onAuthStateChanged(auth, (user) => {
+        const errorP = document.getElementById('auth-error');
+        if (user) {
+            if (user.uid === AUTHORIZED_UID) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('app-body').classList.remove('hidden');
+                startApp();
+            } else {
+                errorP.innerText = "Access Denied: This UID is not authorized.";
+                signOut(auth);
+            }
+        } else {
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('app-body').classList.add('hidden');
+        }
     });
+
+    window.handleLogin = () => {
+        const email = document.getElementById('auth-email').value;
+        const pass = document.getElementById('auth-pass').value;
+        signInWithEmailAndPassword(auth, email, pass).catch(err => {
+            document.getElementById('auth-error').innerText = "Incorrect email or password.";
+        });
+    };
+
+    window.handleLogout = () => signOut(auth);
+
+    function startApp() {
+        onValue(invRef, (snap) => {
+            state = snap.val() || { folders: [] };
+            render();
+        });
+    }
 
     function sync() { set(invRef, state); }
 
