@@ -291,7 +291,6 @@
         document.getElementById('save-btn').innerText = "SAVE";
         document.getElementById('save-btn').onclick = applyEdit;
         
-        // Always show DELETE unless we are creating a brand new item/folder
         if (isNew) {
             document.getElementById('del-btn').classList.add('hidden');
         } else {
@@ -305,16 +304,32 @@
         const img = document.getElementById('edit-img').value;
         if(!name) return;
         const t = window.target;
-        if (t.type === 'new_f') state.folders.push({ id: Date.now().toString(), name, img, items: [] });
-        else if (t.type === 'new_i') {
-            const f = state.folders.find(f => String(f.id) === (currentFolderId || 'recent_notes'));
-            if (!f) return alert("Select a location first");
-            if (!f.items) f.items = [];
-            f.items.push({ id: Date.now().toString(), name, img });
-        } else if (t.type === 'f') { state.folders[t.idx].name = name; state.folders[t.idx].img = img; }
-        else {
+
+        if (t.type === 'new_f') {
+            state.folders.push({ id: Date.now().toString(), name, img, items: [] });
+        } else if (t.type === 'new_i') {
+            // Find target folder: either current open one OR the first folder available as a fallback
+            let targetFolder;
+            if (currentFolderId) {
+                targetFolder = state.folders.find(f => String(f.id) === String(currentFolderId));
+            } else if (state.folders.length > 0) {
+                targetFolder = state.folders[0];
+            }
+
+            if (targetFolder) {
+                if (!targetFolder.items) targetFolder.items = [];
+                targetFolder.items.push({ id: Date.now().toString(), name, img });
+            } else {
+                // If NO folders exist, create one called Inbox to hold the item
+                state.folders.push({ id: 'inbox', name: 'Inbox', img: '', items: [{ id: Date.now().toString(), name, img }] });
+            }
+        } else if (t.type === 'f') {
+            state.folders[t.idx].name = name; 
+            state.folders[t.idx].img = img; 
+        } else if (t.type === 'i') {
             const f = state.folders.find(f => String(f.id) === String(currentFolderId));
-            f.items[t.idx].name = name; f.items[t.idx].img = img;
+            f.items[t.idx].name = name; 
+            f.items[t.idx].img = img;
         }
         sync(); closeModals();
     };
