@@ -15,11 +15,11 @@
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Quicksand:wght@300;500&display=swap');
 
         :root { 
-            --primary: #8b0000; /* Deep Crimson */
+            --primary: #8b0000; 
             --danger: #4a0000; 
             --card-bg: #0a0a0a; 
             --text: #e0e0e0; 
-            --accent: #c0c0c0; /* Silver */
+            --accent: #c0c0c0; 
             --border: #2a2a2a;
         }
 
@@ -35,11 +35,6 @@
 
         h2, h3, .card-name { font-family: 'Cinzel', serif; letter-spacing: 1px; }
 
-        #login-screen {
-            position: fixed; inset: 0; background: #000; z-index: 2000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
-        }
-        
         header { 
             padding: 20px; display: flex; justify-content: space-between; align-items: center; 
             background: rgba(0,0,0,0.9); border-bottom: 1px solid var(--primary);
@@ -53,7 +48,6 @@
             display: flex; align-items: center; overflow: hidden; 
             border: 1px solid var(--border); height: 110px;
             box-shadow: 0 4px 15px rgba(139, 0, 0, 0.1);
-            transition: transform 0.2s;
         }
 
         .card-img { 
@@ -82,7 +76,6 @@
             border-radius: 4px; padding: 10px 15px; cursor: pointer; 
             font-family: 'Cinzel', serif; font-weight: bold; text-transform: uppercase;
         }
-        .btn-mini:active { background: var(--primary); }
         .btn-danger { border-color: #ff3b30; color: #ff3b30; }
         
         .modal-bg { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); display:none; align-items:center; justify-content:center; z-index: 1000; }
@@ -100,6 +93,11 @@
             font-size: 35px; box-shadow: 0 0 20px rgba(139, 0, 0, 0.5); z-index: 99; 
             font-family: 'Cinzel', serif;
         }
+        
+        #login-screen {
+            position: fixed; inset: 0; background: #000; z-index: 2000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
+        }
     </style>
 </head>
 <body>
@@ -115,7 +113,7 @@
 <div id="app-body" class="hidden">
     <header>
         <button id="back-btn" class="btn-mini hidden" onclick="goBack()">← Return</button>
-        <h2 id="title" style="margin:0;">The Vault</h2>
+        <h2 id="title" style="margin:0;">THE VAULT</h2>
         <button class="btn-mini" style="border:none; color:var(--primary); font-size:10px;" onclick="handleLogout()">Exhume</button>
     </header>
 
@@ -160,7 +158,6 @@
 
     let state = { folders: [] };
     let currentFolderId = null;
-    let editingTarget = { type: null, idx: null };
 
     onAuthStateChanged(auth, (user) => {
         if (user && user.uid === AUTHORIZED_UID) {
@@ -193,7 +190,7 @@
     }
 
     function ensureRecentFolder() {
-        if (!state.folders.some(f => f.id === 'recent_notes')) {
+        if (!state.folders.some(f => f.id.toString() === 'recent_notes')) {
             state.folders.unshift({ id: 'recent_notes', name: 'Recent Spirits', img: '', items: [], permanent: true });
             sync();
         }
@@ -227,7 +224,7 @@
             });
         } else {
             backBtn.classList.remove('hidden');
-            const folder = state.folders.find(f => f.id === currentFolderId.toString());
+            const folder = state.folders.find(f => f.id.toString() === currentFolderId.toString());
             document.getElementById('title').innerText = folder.name.toUpperCase();
             content.innerHTML = `<button class="btn-mini" style="width:100%; margin-bottom:20px; border-style:dashed;" onclick="openAddModal('new_i')">+ Summon New Item</button>`;
             (folder.items || []).forEach((item, idx) => {
@@ -248,7 +245,7 @@
     };
 
     window.move = (type, idx, dir) => {
-        let list = (type === 'f') ? state.folders : state.folders.find(f => f.id === currentFolderId.toString()).items;
+        let list = (type === 'f') ? state.folders : state.folders.find(f => f.id.toString() === currentFolderId.toString()).items;
         let newIdx = idx + dir;
         if (newIdx < 0 || newIdx >= list.length) return;
         [list[idx], list[newIdx]] = [list[newIdx], list[idx]];
@@ -265,7 +262,7 @@
     }
 
     window.openAddModal = (type) => {
-        editingTarget = { type };
+        window.editingTarget = { type };
         document.getElementById('edit-header').innerText = (type === 'new_f') ? "New Location" : "New Item";
         document.getElementById('edit-name').value = '';
         document.getElementById('edit-img').value = '';
@@ -274,8 +271,8 @@
     };
 
     window.openEditModal = (type, idx) => {
-        editingTarget = { type, idx };
-        const data = (type === 'f') ? state.folders[idx] : state.folders.find(f => f.id === currentFolderId.toString()).items[idx];
+        window.editingTarget = { type, idx };
+        const data = (type === 'f') ? state.folders[idx] : state.folders.find(f => f.id.toString() === currentFolderId.toString()).items[idx];
         document.getElementById('edit-name').value = data.name;
         document.getElementById('edit-img').value = data.img || '';
         document.getElementById('edit-header').innerText = "Modify Record";
@@ -293,30 +290,30 @@
         const img = document.getElementById('edit-img').value;
         if(!name) return;
 
-        if (editingTarget.type === 'new_f') {
+        if (window.editingTarget.type === 'new_f') {
             state.folders.push({ id: Date.now().toString(), name, img, items: [] });
-        } else if (editingTarget.type === 'new_i') {
+        } else if (window.editingTarget.type === 'new_i') {
             const targetId = currentFolderId ? currentFolderId.toString() : 'recent_notes';
-            const f = state.folders.find(f => f.id === targetId);
+            const f = state.folders.find(f => f.id.toString() === targetId);
             if (!f.items) f.items = [];
             f.items.push({ id: Date.now().toString(), name, img });
-        } else if (editingTarget.type === 'f') {
-            state.folders[editingTarget.idx].name = name;
-            state.folders[editingTarget.idx].img = img;
-        } else if (editingTarget.type === 'i') {
-            const f = state.folders.find(f => f.id === currentFolderId.toString());
-            f.items[editingTarget.idx].name = name;
-            f.items[editingTarget.idx].img = img;
+        } else if (window.editingTarget.type === 'f') {
+            state.folders[window.editingTarget.idx].name = name;
+            state.folders[window.editingTarget.idx].img = img;
+        } else if (window.editingTarget.type === 'i') {
+            const f = state.folders.find(f => f.id.toString() === currentFolderId.toString());
+            f.items[window.editingTarget.idx].name = name;
+            f.items[window.editingTarget.idx].img = img;
         }
         sync(); closeModals();
     };
 
     window.confirmDelete = () => {
         if (!confirm("Vanish this record forever?")) return;
-        if (editingTarget.type === 'f') {
-            state.folders.splice(editingTarget.idx, 1);
+        if (window.editingTarget.type === 'f') {
+            state.folders.splice(window.editingTarget.idx, 1);
         } else {
-            state.folders.find(f => f.id === currentFolderId.toString()).items.splice(editingTarget.idx, 1);
+            state.folders.find(f => f.id.toString() === currentFolderId.toString()).items.splice(window.editingTarget.idx, 1);
         }
         sync(); closeModals();
     };
