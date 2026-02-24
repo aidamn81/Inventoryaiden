@@ -12,86 +12,127 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <style>
-        :root { --primary: #007AFF; --danger: #FF3B30; --card-bg: #1c1c1e; --text: #ffffff; }
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Quicksand:wght@300;500&display=swap');
+
+        :root { 
+            --primary: #8b0000; /* Deep Crimson */
+            --danger: #4a0000; 
+            --card-bg: #0a0a0a; 
+            --text: #e0e0e0; 
+            --accent: #c0c0c0; /* Silver */
+            --border: #2a2a2a;
+        }
+
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; font-family: -apple-system, sans-serif; background: #000; color: var(--text); height: 100vh; }
         
+        body { 
+            margin: 0; 
+            font-family: 'Quicksand', sans-serif; 
+            background: radial-gradient(circle, #1a1a1a 0%, #000000 100%); 
+            color: var(--text); 
+            height: 100vh; 
+        }
+
+        h2, h3, .card-name { font-family: 'Cinzel', serif; letter-spacing: 1px; }
+
         #login-screen {
             position: fixed; inset: 0; background: #000; z-index: 2000;
             display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
         }
         
         header { 
-            padding: 15px; display: flex; justify-content: space-between; align-items: center; 
-            background: #000; position: sticky; top: 0; z-index: 100;
+            padding: 20px; display: flex; justify-content: space-between; align-items: center; 
+            background: rgba(0,0,0,0.9); border-bottom: 1px solid var(--primary);
+            position: sticky; top: 0; z-index: 100;
         }
 
-        .container { padding: 15px; margin-top: 38px; padding-bottom: 100px; }
+        .container { padding: 15px; margin-top: 20px; padding-bottom: 100px; }
 
         .card {
-            background: var(--card-bg); border-radius: 15px; margin-bottom: 15px;
-            display: flex; align-items: center; overflow: hidden; border: 1px solid #333; height: 100px;
+            background: var(--card-bg); border-radius: 8px; margin-bottom: 20px;
+            display: flex; align-items: center; overflow: hidden; 
+            border: 1px solid var(--border); height: 110px;
+            box-shadow: 0 4px 15px rgba(139, 0, 0, 0.1);
+            transition: transform 0.2s;
         }
 
-        .card-img { width: 100px; height: 100px; background-size: cover; background-position: center; flex-shrink: 0; background-color: #2c2c2e; }
-        .card-content { flex: 1; height: 100%; display: flex; flex-direction: column; padding: 10px 15px; justify-content: center; overflow: hidden; }
-        .card-name { font-weight: 600; font-size: 16px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .preview-list { font-size: 11px; color: #888; display: flex; flex-wrap: wrap; gap: 5px; max-height: 40px; overflow: hidden; }
-        .preview-item { background: #2c2c2e; padding: 2px 6px; border-radius: 4px; }
+        .card-img { 
+            width: 110px; height: 110px; background-size: cover; background-position: center; 
+            flex-shrink: 0; background-color: #111; border-right: 1px solid var(--primary); 
+        }
+        
+        .card-content { flex: 1; height: 100%; display: flex; flex-direction: column; padding: 12px; justify-content: center; }
+        .card-name { font-weight: 700; font-size: 17px; margin-bottom: 6px; color: var(--accent); }
+        .preview-list { font-size: 10px; color: #666; display: flex; flex-wrap: wrap; gap: 4px; }
+        .preview-item { border: 1px solid #333; padding: 2px 5px; border-radius: 3px; font-style: italic; }
 
         .card-controls {
             display: flex; flex-direction: column; justify-content: space-around;
-            align-items: center; padding: 5px; border-left: 1px solid #333;
-            height: 100%; width: 50px; background: #121212;
+            align-items: center; padding: 5px; border-left: 1px solid var(--border);
+            height: 100%; width: 45px; background: #050505;
         }
 
-        .ctrl-btn { background: none; border: none; color: #007AFF; font-size: 16px; padding: 5px; cursor: pointer; }
-        .ctrl-gear { color: #666; font-size: 18px; }
+        .ctrl-btn { background: none; border: none; color: var(--primary); font-size: 14px; cursor: pointer; }
+        .ctrl-gear { color: var(--accent); font-size: 16px; opacity: 0.6; }
 
         .hidden { display: none !important; }
-        .btn-mini { border: none; background: var(--primary); color: white; border-radius: 8px; padding: 10px 15px; cursor: pointer; font-weight: bold; }
-        .btn-danger { background: var(--danger); }
         
-        .modal-bg { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); display:none; align-items:center; justify-content:center; z-index: 1000; }
+        .btn-mini { 
+            border: 1px solid var(--primary); background: transparent; color: var(--text); 
+            border-radius: 4px; padding: 10px 15px; cursor: pointer; 
+            font-family: 'Cinzel', serif; font-weight: bold; text-transform: uppercase;
+        }
+        .btn-mini:active { background: var(--primary); }
+        .btn-danger { border-color: #ff3b30; color: #ff3b30; }
+        
+        .modal-bg { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); display:none; align-items:center; justify-content:center; z-index: 1000; }
         .modal-bg.active { display: flex; }
-        .modal { background: #2c2c2e; padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; }
+        .modal { background: #0a0a0a; padding: 30px; border-radius: 0; border: 1px solid var(--primary); width: 90%; max-width: 400px; }
         
-        input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #444; border-radius: 10px; background: #1c1c1e; color: white; font-size: 16px; }
+        input { 
+            width: 100%; padding: 14px; margin: 10px 0; border: none; border-bottom: 1px solid var(--primary); 
+            background: #111; color: white; font-size: 16px; border-radius: 4px;
+        }
         
-        .fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: var(--primary); color: white; border-radius: 50%; border: none; font-size: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 99; }
+        .fab { 
+            position: fixed; bottom: 30px; right: 30px; width: 65px; height: 65px; 
+            background: var(--primary); color: white; border-radius: 50%; border: 2px solid var(--accent); 
+            font-size: 35px; box-shadow: 0 0 20px rgba(139, 0, 0, 0.5); z-index: 99; 
+            font-family: 'Cinzel', serif;
+        }
     </style>
 </head>
 <body>
 
 <div id="login-screen">
-    <h2 style="margin-bottom: 20px;">Inventory Access</h2>
-    <input type="email" id="auth-email" placeholder="Email">
-    <input type="password" id="auth-pass" placeholder="Password">
-    <button class="btn-mini" style="width: 100%;" onclick="handleLogin()">Login</button>
+    <h2 style="color: var(--primary);">Access Forbidden</h2>
+    <input type="email" id="auth-email" placeholder="Guardian Email">
+    <input type="password" id="auth-pass" placeholder="Secret Key">
+    <button class="btn-mini" style="width: 100%; margin-top:10px;" onclick="handleLogin()">Enter</button>
     <p id="auth-error" style="color: var(--danger); font-size: 14px; margin-top: 15px; text-align: center;"></p>
 </div>
 
 <div id="app-body" class="hidden">
     <header>
-        <button id="back-btn" class="btn-mini hidden" style="background:#333" onclick="goBack()">← Back</button>
-        <h2 id="title" style="margin:0;">Inventory</h2>
-        <button class="btn-mini" style="background:none; color:#666; font-size:10px;" onclick="handleLogout()">Logout</button>
+        <button id="back-btn" class="btn-mini hidden" onclick="goBack()">← Return</button>
+        <h2 id="title" style="margin:0;">The Vault</h2>
+        <button class="btn-mini" style="border:none; color:var(--primary); font-size:10px;" onclick="handleLogout()">Exhume</button>
     </header>
 
     <div class="container" id="app-content"></div>
 
-    <button class="fab" id="main-fab" onclick="openAddModal()">+</button>
+    <button class="fab" id="main-fab" onclick="showFabOptions()">+</button>
 
     <div id="edit-modal" class="modal-bg">
         <div class="modal">
-            <h3 id="edit-header">Edit Entry</h3>
+            <h3 id="edit-header" style="color:var(--primary)">Modify Record</h3>
             <input id="edit-name" placeholder="Name">
-            <input id="edit-img" placeholder="Image URL">
-            <div style="display:flex; gap:10px; margin-top:10px;">
-                <button class="btn-mini" style="flex:1" onclick="applyEdit()">Save</button>
-                <button class="btn-mini btn-danger" onclick="confirmDelete()">Delete</button>
+            <input id="edit-img" placeholder="Visual URL">
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="btn-mini" style="flex:1" onclick="applyEdit()">Inscribe</button>
+                <button id="del-btn" class="btn-mini btn-danger" onclick="confirmDelete()">Vanish</button>
             </div>
-            <button class="btn-mini" style="width:100%; margin-top:10px; background:#444" onclick="closeModals()">Cancel</button>
+            <button class="btn-mini" style="width:100%; margin-top:10px; border-color:#444" onclick="closeModals()">Seal</button>
         </div>
     </div>
 </div>
@@ -112,7 +153,6 @@
     };
 
     const AUTHORIZED_UID = "WmMCIqgKBfO3tSGHb0nSa5qBpOc2";
-
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
@@ -123,16 +163,10 @@
     let editingTarget = { type: null, idx: null };
 
     onAuthStateChanged(auth, (user) => {
-        const errorP = document.getElementById('auth-error');
-        if (user) {
-            if (user.uid === AUTHORIZED_UID) {
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('app-body').classList.remove('hidden');
-                startApp();
-            } else {
-                errorP.innerText = "Access Denied: This UID is not authorized.";
-                signOut(auth);
-            }
+        if (user && user.uid === AUTHORIZED_UID) {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-body').classList.remove('hidden');
+            startApp();
         } else {
             document.getElementById('login-screen').classList.remove('hidden');
             document.getElementById('app-body').classList.add('hidden');
@@ -142,8 +176,8 @@
     window.handleLogin = () => {
         const email = document.getElementById('auth-email').value;
         const pass = document.getElementById('auth-pass').value;
-        signInWithEmailAndPassword(auth, email, pass).catch(err => {
-            document.getElementById('auth-error').innerText = "Incorrect email or password.";
+        signInWithEmailAndPassword(auth, email, pass).catch(() => {
+            document.getElementById('auth-error').innerText = "The key does not turn.";
         });
     };
 
@@ -151,9 +185,18 @@
 
     function startApp() {
         onValue(invRef, (snap) => {
-            state = snap.val() || { folders: [] };
+            const data = snap.val();
+            state = (data && data.folders) ? data : { folders: [] };
+            ensureRecentFolder();
             render();
         });
+    }
+
+    function ensureRecentFolder() {
+        if (!state.folders.some(f => f.id === 'recent_notes')) {
+            state.folders.unshift({ id: 'recent_notes', name: 'Recent Spirits', img: '', items: [], permanent: true });
+            sync();
+        }
     }
 
     function sync() { set(invRef, state); }
@@ -165,28 +208,28 @@
 
         if (currentFolderId === null) {
             backBtn.classList.add('hidden');
-            document.getElementById('title').innerText = "Inventory";
+            document.getElementById('title').innerText = "THE VAULT";
             state.folders.forEach((f, idx) => {
-                const itemsList = (f.items || []).slice(0, 4).map(i => `<span class="preview-item">${i.name}</span>`).join('');
+                const itemsList = (f.items || []).slice(0, 3).map(i => `<span class="preview-item">${i.name}</span>`).join('');
                 content.innerHTML += `
                 <div class="card">
-                    <div class="card-img" style="background-image:url('${f.img}')" onclick="openFolder(${f.id})"></div>
-                    <div class="card-content" onclick="openFolder(${f.id})">
+                    <div class="card-img" style="background-image:url('${f.img}')" onclick="openFolder('${f.id}')"></div>
+                    <div class="card-content" onclick="openFolder('${f.id}')">
                         <div class="card-name">${f.name}</div>
-                        <div class="preview-list">${itemsList || 'Empty'}</div>
+                        <div class="preview-list">${itemsList || 'Awaiting records...'}</div>
                     </div>
                     <div class="card-controls">
                         <button class="ctrl-btn" onclick="move('f', ${idx}, -1)">▲</button>
-                        <button class="ctrl-btn ctrl-gear" onclick="openEditModal('f', ${idx})">⚙️</button>
+                        <button class="ctrl-btn ctrl-gear" onclick="openEditModal('f', ${idx})">⚙</button>
                         <button class="ctrl-btn" onclick="move('f', ${idx}, 1)">▼</button>
                     </div>
                 </div>`;
             });
         } else {
             backBtn.classList.remove('hidden');
-            const folder = state.folders.find(f => f.id === currentFolderId);
-            document.getElementById('title').innerText = folder.name;
-            content.innerHTML = `<button class="btn-mini" style="width:100%; margin-bottom:20px;" onclick="openAddModal()">+ Add New Item</button>`;
+            const folder = state.folders.find(f => f.id === currentFolderId.toString());
+            document.getElementById('title').innerText = folder.name.toUpperCase();
+            content.innerHTML = `<button class="btn-mini" style="width:100%; margin-bottom:20px; border-style:dashed;" onclick="openAddModal('new_i')">+ Summon New Item</button>`;
             (folder.items || []).forEach((item, idx) => {
                 content.innerHTML += `
                 <div class="card">
@@ -196,7 +239,7 @@
                     </div>
                     <div class="card-controls">
                         <button class="ctrl-btn" onclick="move('i', ${idx}, -1)">▲</button>
-                        <button class="ctrl-btn ctrl-gear" onclick="openEditModal('i', ${idx})">⚙️</button>
+                        <button class="ctrl-btn ctrl-gear" onclick="openEditModal('i', ${idx})">⚙</button>
                         <button class="ctrl-btn" onclick="move('i', ${idx}, 1)">▼</button>
                     </div>
                 </div>`;
@@ -205,19 +248,43 @@
     };
 
     window.move = (type, idx, dir) => {
-        let list = (type === 'f') ? state.folders : state.folders.find(f => f.id === currentFolderId).items;
+        let list = (type === 'f') ? state.folders : state.folders.find(f => f.id === currentFolderId.toString()).items;
         let newIdx = idx + dir;
         if (newIdx < 0 || newIdx >= list.length) return;
         [list[idx], list[newIdx]] = [list[newIdx], list[idx]];
         sync();
     };
 
+    window.showFabOptions = () => {
+        if (currentFolderId === null) {
+            const opt = confirm("Summon a New Location? (Cancel to add Item to Recents)");
+            if (opt) openAddModal('new_f'); else openAddModal('new_i');
+        } else {
+            openAddModal('new_i');
+        }
+    }
+
+    window.openAddModal = (type) => {
+        editingTarget = { type };
+        document.getElementById('edit-header').innerText = (type === 'new_f') ? "New Location" : "New Item";
+        document.getElementById('edit-name').value = '';
+        document.getElementById('edit-img').value = '';
+        document.getElementById('del-btn').classList.add('hidden');
+        document.getElementById('edit-modal').classList.add('active');
+    };
+
     window.openEditModal = (type, idx) => {
         editingTarget = { type, idx };
-        const data = (type === 'f') ? state.folders[idx] : state.folders.find(f => f.id === currentFolderId).items[idx];
+        const data = (type === 'f') ? state.folders[idx] : state.folders.find(f => f.id === currentFolderId.toString()).items[idx];
         document.getElementById('edit-name').value = data.name;
         document.getElementById('edit-img').value = data.img || '';
-        document.getElementById('edit-header').innerText = type === 'f' ? "Edit Location" : "Edit Item";
+        document.getElementById('edit-header').innerText = "Modify Record";
+        
+        if (type === 'f' && state.folders[idx].permanent) {
+            document.getElementById('del-btn').classList.add('hidden');
+        } else {
+            document.getElementById('del-btn').classList.remove('hidden');
+        }
         document.getElementById('edit-modal').classList.add('active');
     };
 
@@ -227,16 +294,17 @@
         if(!name) return;
 
         if (editingTarget.type === 'new_f') {
-            state.folders.push({ id: Date.now(), name, img, items: [] });
+            state.folders.push({ id: Date.now().toString(), name, img, items: [] });
         } else if (editingTarget.type === 'new_i') {
-            const f = state.folders.find(f => f.id === currentFolderId);
+            const targetId = currentFolderId ? currentFolderId.toString() : 'recent_notes';
+            const f = state.folders.find(f => f.id === targetId);
             if (!f.items) f.items = [];
-            f.items.push({ id: Date.now(), name, img });
+            f.items.push({ id: Date.now().toString(), name, img });
         } else if (editingTarget.type === 'f') {
             state.folders[editingTarget.idx].name = name;
             state.folders[editingTarget.idx].img = img;
         } else if (editingTarget.type === 'i') {
-            const f = state.folders.find(f => f.id === currentFolderId);
+            const f = state.folders.find(f => f.id === currentFolderId.toString());
             f.items[editingTarget.idx].name = name;
             f.items[editingTarget.idx].img = img;
         }
@@ -244,21 +312,16 @@
     };
 
     window.confirmDelete = () => {
-        if (!confirm("Delete permanently?")) return;
-        if (editingTarget.type === 'f') state.folders.splice(editingTarget.idx, 1);
-        else state.folders.find(f => f.id === currentFolderId).items.splice(editingTarget.idx, 1);
+        if (!confirm("Vanish this record forever?")) return;
+        if (editingTarget.type === 'f') {
+            state.folders.splice(editingTarget.idx, 1);
+        } else {
+            state.folders.find(f => f.id === currentFolderId.toString()).items.splice(editingTarget.idx, 1);
+        }
         sync(); closeModals();
     };
 
-    window.openAddModal = () => {
-        editingTarget = { type: currentFolderId === null ? 'new_f' : 'new_i' };
-        document.getElementById('edit-header').innerText = currentFolderId === null ? "New Location" : "New Item";
-        document.getElementById('edit-name').value = '';
-        document.getElementById('edit-img').value = '';
-        document.getElementById('edit-modal').classList.add('active');
-    };
-
-    window.openFolder = (id) => { currentFolderId = id; render(); };
+    window.openFolder = (id) => { currentFolderId = id.toString(); render(); };
     window.goBack = () => { currentFolderId = null; render(); };
     window.closeModals = () => document.getElementById('edit-modal').classList.remove('active');
 </script>
