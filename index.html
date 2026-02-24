@@ -96,11 +96,6 @@
             position: fixed; bottom: 0; width: 100%; background: #000; 
             padding: 15px; display: flex; gap: 10px; border-top: 1px solid var(--primary); z-index: 98;
         }
-        
-        #login-screen {
-            position: fixed; inset: 0; background: #000; z-index: 2000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
-        }
     </style>
 </head>
 <body>
@@ -166,7 +161,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
-    const invRef = ref(db, 'inventory'); // Strictly targets the secure node
+    const invRef = ref(db, 'inventory');
 
     let state = { folders: [] };
     let currentFolderId = null;
@@ -294,7 +289,11 @@
         const data = type === 'f' ? state.folders[idx] : state.folders.find(f => String(f.id) === String(currentFolderId)).items[idx];
         document.getElementById('edit-name').value = data.name;
         document.getElementById('edit-img').value = data.img || '';
-        setupModal("Modify Record", false, type === 'f' && state.folders[idx].permanent);
+        
+        // Safety: If it's a folder (f) and marked permanent, hide delete. 
+        // Otherwise, show the 'Vanish' (Delete) button for both folders and items.
+        const isLocked = (type === 'f' && state.folders[idx].permanent);
+        setupModal("Modify Record", false, isLocked);
     };
 
     function setupModal(title, isNew, isLocked) {
@@ -303,7 +302,12 @@
         document.getElementById('edit-header').innerText = title;
         document.getElementById('save-btn').innerText = "Inscribe";
         document.getElementById('save-btn').onclick = applyEdit;
-        isNew || isLocked ? document.getElementById('del-btn').classList.add('hidden') : document.getElementById('del-btn').classList.remove('hidden');
+        
+        if (isNew || isLocked) {
+            document.getElementById('del-btn').classList.add('hidden');
+        } else {
+            document.getElementById('del-btn').classList.remove('hidden');
+        }
         document.getElementById('edit-modal').classList.add('active');
     }
 
@@ -326,10 +330,17 @@
     };
 
     window.confirmDelete = () => {
-        if (!confirm("Vanish this forever?")) return;
         const t = window.target;
-        if (t.type === 'f') state.folders.splice(t.idx, 1);
-        else state.folders.find(f => String(f.id) === String(currentFolderId)).items.splice(t.idx, 1);
+        const label = t.type === 'f' ? "LOCATION" : "ITEM";
+        
+        // Confirmation check for the specific target
+        if (!confirm(`Vanish this ${label} forever?`)) return;
+        
+        if (t.type === 'f') {
+            state.folders.splice(t.idx, 1);
+        } else {
+            state.folders.find(f => String(f.id) === String(currentFolderId)).items.splice(t.idx, 1);
+        }
         sync(); closeModals();
     };
 
@@ -341,7 +352,7 @@
     window.move = (type, idx, dir) => {
         let list = type === 'f' ? state.folders : state.folders.find(f => String(f.id) === String(currentFolderId)).items;
         let nIdx = idx + dir; if (nIdx < 0 || nIdx >= list.length) return;
-        [list[idx], list[newIdx]] = [list[newIdx], list[idx]]; sync();
+        [list[idx], list[nIdx]] = [list[nIdx], list[idx]]; sync();
     };
 
     window.openFolder = (id) => { currentFolderId = id; render(); };
