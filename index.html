@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Inventory</title>
+    <title>The Vault</title>
     
     <link rel="apple-touch-icon" href="https://filedn.eu/lmLPHhnmVT38F0vdFViDpAf/Inventory%20App/inventory.png">
     <link rel="icon" type="image/png" href="https://filedn.eu/lmLPHhnmVT38F0vdFViDpAf/Inventory%20App/inventory.png">
@@ -15,11 +15,11 @@
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Quicksand:wght@300;500&display=swap');
         :root { --primary: #8b0000; --danger: #4a0000; --card-bg: #0a0a0a; --text: #e0e0e0; --accent: #c0c0c0; --border: #2a2a2a; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; font-family: 'Quicksand', sans-serif; background: radial-gradient(circle, #1a1a1a 0%, #000000 100%); color: var(--text); height: 100vh; overflow-x: hidden; }
+        body { margin: 0; font-family: 'Quicksand', sans-serif; background: radial-gradient(circle, #1a1a1a 0%, #000000 100%); color: var(--text); height: 100vh; }
         h2, h3, .card-name { font-family: 'Cinzel', serif; letter-spacing: 1px; }
         header { padding: 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.9); border-bottom: 1px solid var(--primary); position: sticky; top: 0; z-index: 100; }
-        .container { padding: 15px; margin-top: 20px; padding-bottom: 100px; }
-        .card { background: var(--card-bg); border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; overflow: hidden; border: 1px solid var(--border); height: 110px; box-shadow: 0 4px 15px rgba(139, 0, 0, 0.1); }
+        .container { padding: 15px; margin-top: 20px; padding-bottom: 120px; }
+        .card { background: var(--card-bg); border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; overflow: hidden; border: 1px solid var(--border); height: 110px; box-shadow: 0 4px 15px rgba(139, 0, 0, 0.1); transition: 0.3s; }
         .card-img { width: 110px; height: 110px; background-size: cover; background-position: center; flex-shrink: 0; background-color: #111; border-right: 1px solid var(--primary); }
         .card-content { flex: 1; height: 100%; display: flex; flex-direction: column; padding: 12px; justify-content: center; overflow: hidden; }
         .card-name { font-weight: 700; font-size: 17px; margin-bottom: 6px; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -27,44 +27,55 @@
         .preview-item { border: 1px solid #333; padding: 2px 5px; border-radius: 3px; font-style: italic; }
         .card-controls { display: flex; flex-direction: column; justify-content: space-around; align-items: center; padding: 5px; border-left: 1px solid var(--border); height: 100%; width: 45px; background: #050505; }
         .ctrl-btn { background: none; border: none; color: var(--primary); font-size: 14px; cursor: pointer; }
-        .ctrl-gear { color: var(--accent); font-size: 16px; opacity: 0.6; }
         .hidden { display: none !important; }
-        .btn-mini { border: 1px solid var(--primary); background: transparent; color: var(--text); border-radius: 4px; padding: 10px 15px; cursor: pointer; font-family: 'Cinzel', serif; font-weight: bold; text-transform: uppercase; }
-        .btn-danger { border-color: #ff3b30; color: #ff3b30; }
+        .btn-mini { border: 1px solid var(--primary); background: transparent; color: var(--text); border-radius: 4px; padding: 10px 15px; cursor: pointer; font-family: 'Cinzel', serif; font-weight: bold; text-transform: uppercase; font-size: 12px; }
         .modal-bg { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); display:none; align-items:center; justify-content:center; z-index: 1000; }
         .modal-bg.active { display: flex; }
         .modal { background: #0a0a0a; padding: 30px; border: 1px solid var(--primary); width: 90%; max-width: 400px; }
-        input { width: 100%; padding: 14px; margin: 10px 0; border: none; border-bottom: 1px solid var(--primary); background: #111; color: white; font-size: 16px; border-radius: 4px; }
+        input, textarea { width: 100%; padding: 14px; margin: 10px 0; border: none; border-bottom: 1px solid var(--primary); background: #111; color: white; font-size: 16px; border-radius: 4px; }
         .fab { position: fixed; bottom: 30px; right: 30px; width: 65px; height: 65px; background: var(--primary); color: white; border-radius: 50%; border: 2px solid var(--accent); font-size: 35px; box-shadow: 0 0 20px rgba(139, 0, 0, 0.5); z-index: 99; font-family: 'Cinzel', serif; }
-        #login-screen { position: fixed; inset: 0; background: #000; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .backup-bar { position: fixed; bottom: 0; width: 100%; background: #000; padding: 10px; display: flex; gap: 10px; border-top: 1px solid var(--primary); z-index: 98; }
     </style>
 </head>
 <body>
 
 <div id="login-screen">
     <h2 style="color: var(--primary);">Access Forbidden</h2>
-    <input type="email" id="auth-email" placeholder="Guardian Email">
-    <input type="password" id="auth-pass" placeholder="Secret Key">
-    <button class="btn-mini" style="width: 100%; margin-top:10px;" onclick="handleLogin()">Enter</button>
-    <p id="auth-error" style="color: var(--danger); font-size: 14px; margin-top: 15px; text-align: center;"></p>
+    <input type="email" id="auth-email" placeholder="Email">
+    <input type="password" id="auth-pass" placeholder="Key">
+    <button class="btn-mini" style="width: 100%;" onclick="handleLogin()">Enter</button>
 </div>
 
 <div id="app-body" class="hidden">
     <header>
         <button id="back-btn" class="btn-mini hidden" onclick="goBack()">← Return</button>
-        <h2 id="title" style="margin:0;">THE VAULT</h2>
-        <button class="btn-mini" style="border:none; color:var(--primary); font-size:10px;" onclick="handleLogout()">Exhume</button>
+        <h2 id="title">THE VAULT</h2>
+        <button class="btn-mini" style="border:none; color:var(--primary);" onclick="handleLogout()">Exit</button>
     </header>
+
     <div class="container" id="app-content"></div>
-    <button class="fab" id="main-fab" onclick="showFabOptions()">+</button>
+
+    <div class="backup-bar">
+        <button class="btn-mini" style="flex:1; border-color:#444;" onclick="openBackupModal('export')">Backup</button>
+        <button class="btn-mini" style="flex:1; border-color:#444;" onclick="openBackupModal('import')">Restore</button>
+    </div>
+
+    <button class="fab" onclick="showFabOptions()">+</button>
+
     <div id="edit-modal" class="modal-bg">
         <div class="modal">
             <h3 id="edit-header" style="color:var(--primary)">Modify Record</h3>
-            <input id="edit-name" placeholder="Name">
-            <input id="edit-img" placeholder="Visual URL">
+            <div id="modal-inputs">
+                <input id="edit-name" placeholder="Name">
+                <input id="edit-img" placeholder="Image URL">
+            </div>
+            <div id="backup-inputs" class="hidden">
+                <p style="font-size: 10px; color: #888;">Copy this code to your notes or paste a saved code here.</p>
+                <textarea id="backup-text" rows="8" style="font-family: monospace; font-size: 10px;"></textarea>
+            </div>
             <div style="display:flex; gap:10px; margin-top:20px;">
-                <button class="btn-mini" style="flex:1" onclick="applyEdit()">Inscribe</button>
-                <button id="del-btn" class="btn-mini btn-danger" onclick="confirmDelete()">Vanish</button>
+                <button id="save-btn" class="btn-mini" style="flex:1" onclick="applyEdit()">Inscribe</button>
+                <button id="del-btn" class="btn-mini" style="color:#ff3b30; border-color:#ff3b30;" onclick="confirmDelete()">Vanish</button>
             </div>
             <button class="btn-mini" style="width:100%; margin-top:10px; border-color:#444" onclick="closeModals()">Seal</button>
         </div>
@@ -90,11 +101,11 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
-    const invRef = ref(db, 'inventory'); // Removed trailing slash for better pathing
+    const invRef = ref(db, '/'); // Listening to the absolute root to find any lost data
 
     let state = { folders: [] };
     let currentFolderId = null;
-    window.editingTarget = { type: null, idx: null };
+    window.target = {};
 
     onAuthStateChanged(auth, (user) => {
         if (user && user.uid === AUTHORIZED_UID) {
@@ -110,9 +121,7 @@
     window.handleLogin = () => {
         const email = document.getElementById('auth-email').value;
         const pass = document.getElementById('auth-pass').value;
-        signInWithEmailAndPassword(auth, email, pass).catch(() => {
-            document.getElementById('auth-error').innerText = "The key does not turn.";
-        });
+        signInWithEmailAndPassword(auth, email, pass).catch(e => alert("Forbidden"));
     };
 
     window.handleLogout = () => signOut(auth);
@@ -120,17 +129,9 @@
     function startApp() {
         onValue(invRef, (snap) => {
             const data = snap.val();
-            console.log("Database Raw Data:", data); // THIS HELPS US SEE IF DATA EXISTS
-            
-            // If the database is empty or nested differently, we catch it here
-            if (data && data.folders) {
-                state = data;
-            } else if (Array.isArray(data)) {
-                state = { folders: data };
-            } else {
-                state = { folders: [] };
-            }
-            
+            // Deep search logic: If folders are wrapped in an 'inventory' key or naked at root
+            const rawFolders = data?.inventory?.folders || data?.folders || (Array.isArray(data) ? data : null);
+            state.folders = rawFolders || [];
             ensureRecentFolder();
             render();
         });
@@ -142,12 +143,12 @@
         }
     }
 
-    function sync() { set(invRef, state); }
+    function sync() { set(ref(db, 'inventory'), state); }
 
     window.render = () => {
         const content = document.getElementById('app-content');
-        const backBtn = document.getElementById('back-btn');
         content.innerHTML = '';
+        const backBtn = document.getElementById('back-btn');
 
         if (currentFolderId === null) {
             backBtn.classList.add('hidden');
@@ -159,11 +160,11 @@
                     <div class="card-img" style="background-image:url('${f.img || ''}')" onclick="openFolder('${f.id}')"></div>
                     <div class="card-content" onclick="openFolder('${f.id}')">
                         <div class="card-name">${f.name}</div>
-                        <div class="preview-list">${itemsList || 'Awaiting records...'}</div>
+                        <div class="preview-list">${itemsList || 'Empty'}</div>
                     </div>
                     <div class="card-controls">
                         <button class="ctrl-btn" onclick="move('f', ${idx}, -1)">▲</button>
-                        <button class="ctrl-btn ctrl-gear" onclick="openEditModal('f', ${idx})">⚙</button>
+                        <button class="ctrl-btn" onclick="openEditModal('f', ${idx})">⚙</button>
                         <button class="ctrl-btn" onclick="move('f', ${idx}, 1)">▼</button>
                     </div>
                 </div>`;
@@ -171,9 +172,8 @@
         } else {
             backBtn.classList.remove('hidden');
             const folder = state.folders.find(f => String(f.id) === String(currentFolderId));
-            if (!folder) { goBack(); return; }
             document.getElementById('title').innerText = folder.name.toUpperCase();
-            content.innerHTML = `<button class="btn-mini" style="width:100%; margin-bottom:20px; border-style:dashed;" onclick="openAddModal('new_i')">+ Summon New Item</button>`;
+            content.innerHTML = `<button class="btn-mini" style="width:100%; margin-bottom:20px; border-style:dashed;" onclick="openAddModal('new_i')">+ Summon Item</button>`;
             (folder.items || []).forEach((item, idx) => {
                 content.innerHTML += `
                 <div class="card">
@@ -183,7 +183,7 @@
                     </div>
                     <div class="card-controls">
                         <button class="ctrl-btn" onclick="move('i', ${idx}, -1)">▲</button>
-                        <button class="ctrl-btn ctrl-gear" onclick="openEditModal('i', ${idx})">⚙</button>
+                        <button class="ctrl-btn" onclick="openEditModal('i', ${idx})">⚙</button>
                         <button class="ctrl-btn" onclick="move('i', ${idx}, 1)">▼</button>
                     </div>
                 </div>`;
@@ -191,73 +191,97 @@
         }
     };
 
-    window.move = (type, idx, dir) => {
-        let list = (type === 'f') ? state.folders : state.folders.find(f => String(f.id) === String(currentFolderId)).items;
-        let newIdx = idx + dir;
-        if (newIdx < 0 || newIdx >= list.length) return;
-        [list[idx], list[newIdx]] = [list[newIdx], list[idx]];
-        sync();
+    window.openBackupModal = (mode) => {
+        document.getElementById('modal-inputs').classList.add('hidden');
+        document.getElementById('backup-inputs').classList.remove('hidden');
+        document.getElementById('del-btn').classList.add('hidden');
+        document.getElementById('edit-header').innerText = mode === 'export' ? "Export Vault" : "Restore Vault";
+        const btn = document.getElementById('save-btn');
+        const area = document.getElementById('backup-text');
+        
+        if (mode === 'export') {
+            area.value = JSON.stringify(state.folders);
+            btn.innerText = "Copy to Clipboard";
+            btn.onclick = () => { area.select(); document.execCommand('copy'); alert("Copied!"); };
+        } else {
+            area.value = "";
+            btn.innerText = "Execute Restore";
+            btn.onclick = () => {
+                try {
+                    const imported = JSON.parse(area.value);
+                    if (Array.isArray(imported)) {
+                        state.folders = imported;
+                        sync(); closeModals(); alert("Restored!");
+                    }
+                } catch(e) { alert("Invalid Code"); }
+            };
+        }
+        document.getElementById('edit-modal').classList.add('active');
     };
 
-    window.showFabOptions = () => {
-        if (currentFolderId === null) {
-            const opt = confirm("Summon a New Location? (Cancel to add Item to Recents)");
-            if (opt) openAddModal('new_f'); else openAddModal('new_i');
-        } else { openAddModal('new_i'); }
-    }
-
     window.openAddModal = (type) => {
-        window.editingTarget = { type };
-        document.getElementById('edit-header').innerText = (type === 'new_f') ? "New Location" : "New Item";
-        document.getElementById('edit-name').value = '';
-        document.getElementById('edit-img').value = '';
-        document.getElementById('del-btn').classList.add('hidden');
-        document.getElementById('edit-modal').classList.add('active');
+        window.target = { type };
+        setupModal("New Record", true);
     };
 
     window.openEditModal = (type, idx) => {
-        window.editingTarget = { type, idx };
-        const data = (type === 'f') ? state.folders[idx] : state.folders.find(f => String(f.id) === String(currentFolderId)).items[idx];
+        window.target = { type, idx };
+        const data = type === 'f' ? state.folders[idx] : state.folders.find(f => String(f.id) === String(currentFolderId)).items[idx];
         document.getElementById('edit-name').value = data.name;
         document.getElementById('edit-img').value = data.img || '';
-        document.getElementById('edit-header').innerText = "Modify Record";
-        if (type === 'f' && state.folders[idx].permanent) { document.getElementById('del-btn').classList.add('hidden'); }
-        else { document.getElementById('del-btn').classList.remove('hidden'); }
-        document.getElementById('edit-modal').classList.add('active');
+        setupModal("Edit Record", false, type === 'f' && state.folders[idx].permanent);
     };
+
+    function setupModal(title, isNew, isLocked) {
+        document.getElementById('modal-inputs').classList.remove('hidden');
+        document.getElementById('backup-inputs').classList.add('hidden');
+        document.getElementById('edit-header').innerText = title;
+        document.getElementById('save-btn').innerText = "Inscribe";
+        document.getElementById('save-btn').onclick = applyEdit;
+        isNew || isLocked ? document.getElementById('del-btn').classList.add('hidden') : document.getElementById('del-btn').classList.remove('hidden');
+        document.getElementById('edit-modal').classList.add('active');
+    }
 
     window.applyEdit = () => {
         const name = document.getElementById('edit-name').value;
         const img = document.getElementById('edit-img').value;
         if(!name) return;
-        if (window.editingTarget.type === 'new_f') {
-            state.folders.push({ id: Date.now().toString(), name, img, items: [] });
-        } else if (window.editingTarget.type === 'new_i') {
-            const targetId = currentFolderId ? currentFolderId.toString() : 'recent_notes';
-            const f = state.folders.find(f => String(f.id) === String(targetId));
+        const t = window.target;
+        if (t.type === 'new_f') state.folders.push({ id: Date.now().toString(), name, img, items: [] });
+        else if (t.type === 'new_i') {
+            const f = state.folders.find(f => String(f.id) === (currentFolderId || 'recent_notes'));
             if (!f.items) f.items = [];
             f.items.push({ id: Date.now().toString(), name, img });
-        } else if (window.editingTarget.type === 'f') {
-            state.folders[window.editingTarget.idx].name = name;
-            state.folders[window.editingTarget.idx].img = img;
-        } else if (window.editingTarget.type === 'i') {
+        } else if (t.type === 'f') { state.folders[t.idx].name = name; state.folders[t.idx].img = img; }
+        else {
             const f = state.folders.find(f => String(f.id) === String(currentFolderId));
-            f.items[window.editingTarget.idx].name = name;
-            f.items[window.editingTarget.idx].img = img;
+            f.items[t.idx].name = name; f.items[t.idx].img = img;
         }
         sync(); closeModals();
     };
 
     window.confirmDelete = () => {
-        if (!confirm("Vanish this record forever?")) return;
-        if (window.editingTarget.type === 'f') { state.folders.splice(window.editingTarget.idx, 1); }
-        else { state.folders.find(f => String(f.id) === String(currentFolderId)).items.splice(window.editingTarget.idx, 1); }
+        if (!confirm("Vanish forever?")) return;
+        const t = window.target;
+        if (t.type === 'f') state.folders.splice(t.idx, 1);
+        else state.folders.find(f => String(f.id) === String(currentFolderId)).items.splice(t.idx, 1);
         sync(); closeModals();
+    };
+
+    window.showFabOptions = () => {
+        if (currentFolderId) openAddModal('new_i');
+        else { if (confirm("Create Location? (Cancel for Item)")) openAddModal('new_f'); else openAddModal('new_i'); }
+    };
+
+    window.move = (type, idx, dir) => {
+        let list = type === 'f' ? state.folders : state.folders.find(f => String(f.id) === String(currentFolderId)).items;
+        let nIdx = idx + dir; if (nIdx < 0 || nIdx >= list.length) return;
+        [list[idx], list[nIdx]] = [list[nIdx], list[idx]]; sync();
     };
 
     window.openFolder = (id) => { currentFolderId = id; render(); };
     window.goBack = () => { currentFolderId = null; render(); };
-    window.closeModals = () => document.getElementById('edit-modal').classList.remove('active');
+    window.closeModals = () => { document.getElementById('edit-modal').classList.remove('active'); };
 </script>
 </body>
 </html>
