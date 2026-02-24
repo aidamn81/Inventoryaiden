@@ -13,91 +13,30 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Quicksand:wght@300;500&display=swap');
-
-        :root { 
-            --primary: #8b0000; 
-            --danger: #4a0000; 
-            --card-bg: #0a0a0a; 
-            --text: #e0e0e0; 
-            --accent: #c0c0c0; 
-            --border: #2a2a2a;
-        }
-
+        :root { --primary: #8b0000; --danger: #4a0000; --card-bg: #0a0a0a; --text: #e0e0e0; --accent: #c0c0c0; --border: #2a2a2a; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        body { 
-            margin: 0; 
-            font-family: 'Quicksand', sans-serif; 
-            background: radial-gradient(circle, #1a1a1a 0%, #000000 100%); 
-            color: var(--text); 
-            height: 100vh; 
-        }
-
+        body { margin: 0; font-family: 'Quicksand', sans-serif; background: radial-gradient(circle, #1a1a1a 0%, #000000 100%); color: var(--text); height: 100vh; overflow-x: hidden; }
         h2, h3, .card-name { font-family: 'Cinzel', serif; letter-spacing: 1px; }
-
-        header { 
-            padding: 20px; display: flex; justify-content: space-between; align-items: center; 
-            background: rgba(0,0,0,0.9); border-bottom: 1px solid var(--primary);
-            position: sticky; top: 0; z-index: 100;
-        }
-
+        header { padding: 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.9); border-bottom: 1px solid var(--primary); position: sticky; top: 0; z-index: 100; }
         .container { padding: 15px; margin-top: 20px; padding-bottom: 100px; }
-
-        .card {
-            background: var(--card-bg); border-radius: 8px; margin-bottom: 20px;
-            display: flex; align-items: center; overflow: hidden; 
-            border: 1px solid var(--border); height: 110px;
-            box-shadow: 0 4px 15px rgba(139, 0, 0, 0.1);
-        }
-
-        .card-img { 
-            width: 110px; height: 110px; background-size: cover; background-position: center; 
-            flex-shrink: 0; background-color: #111; border-right: 1px solid var(--primary); 
-        }
-        
-        .card-content { flex: 1; height: 100%; display: flex; flex-direction: column; padding: 12px; justify-content: center; }
-        .card-name { font-weight: 700; font-size: 17px; margin-bottom: 6px; color: var(--accent); }
+        .card { background: var(--card-bg); border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; overflow: hidden; border: 1px solid var(--border); height: 110px; box-shadow: 0 4px 15px rgba(139, 0, 0, 0.1); }
+        .card-img { width: 110px; height: 110px; background-size: cover; background-position: center; flex-shrink: 0; background-color: #111; border-right: 1px solid var(--primary); }
+        .card-content { flex: 1; height: 100%; display: flex; flex-direction: column; padding: 12px; justify-content: center; overflow: hidden; }
+        .card-name { font-weight: 700; font-size: 17px; margin-bottom: 6px; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .preview-list { font-size: 10px; color: #666; display: flex; flex-wrap: wrap; gap: 4px; }
         .preview-item { border: 1px solid #333; padding: 2px 5px; border-radius: 3px; font-style: italic; }
-
-        .card-controls {
-            display: flex; flex-direction: column; justify-content: space-around;
-            align-items: center; padding: 5px; border-left: 1px solid var(--border);
-            height: 100%; width: 45px; background: #050505;
-        }
-
+        .card-controls { display: flex; flex-direction: column; justify-content: space-around; align-items: center; padding: 5px; border-left: 1px solid var(--border); height: 100%; width: 45px; background: #050505; }
         .ctrl-btn { background: none; border: none; color: var(--primary); font-size: 14px; cursor: pointer; }
         .ctrl-gear { color: var(--accent); font-size: 16px; opacity: 0.6; }
-
         .hidden { display: none !important; }
-        
-        .btn-mini { 
-            border: 1px solid var(--primary); background: transparent; color: var(--text); 
-            border-radius: 4px; padding: 10px 15px; cursor: pointer; 
-            font-family: 'Cinzel', serif; font-weight: bold; text-transform: uppercase;
-        }
+        .btn-mini { border: 1px solid var(--primary); background: transparent; color: var(--text); border-radius: 4px; padding: 10px 15px; cursor: pointer; font-family: 'Cinzel', serif; font-weight: bold; text-transform: uppercase; }
         .btn-danger { border-color: #ff3b30; color: #ff3b30; }
-        
         .modal-bg { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); display:none; align-items:center; justify-content:center; z-index: 1000; }
         .modal-bg.active { display: flex; }
-        .modal { background: #0a0a0a; padding: 30px; border-radius: 0; border: 1px solid var(--primary); width: 90%; max-width: 400px; }
-        
-        input { 
-            width: 100%; padding: 14px; margin: 10px 0; border: none; border-bottom: 1px solid var(--primary); 
-            background: #111; color: white; font-size: 16px; border-radius: 4px;
-        }
-        
-        .fab { 
-            position: fixed; bottom: 30px; right: 30px; width: 65px; height: 65px; 
-            background: var(--primary); color: white; border-radius: 50%; border: 2px solid var(--accent); 
-            font-size: 35px; box-shadow: 0 0 20px rgba(139, 0, 0, 0.5); z-index: 99; 
-            font-family: 'Cinzel', serif;
-        }
-        
-        #login-screen {
-            position: fixed; inset: 0; background: #000; z-index: 2000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
-        }
+        .modal { background: #0a0a0a; padding: 30px; border: 1px solid var(--primary); width: 90%; max-width: 400px; }
+        input { width: 100%; padding: 14px; margin: 10px 0; border: none; border-bottom: 1px solid var(--primary); background: #111; color: white; font-size: 16px; border-radius: 4px; }
+        .fab { position: fixed; bottom: 30px; right: 30px; width: 65px; height: 65px; background: var(--primary); color: white; border-radius: 50%; border: 2px solid var(--accent); font-size: 35px; box-shadow: 0 0 20px rgba(139, 0, 0, 0.5); z-index: 99; font-family: 'Cinzel', serif; }
+        #login-screen { position: fixed; inset: 0; background: #000; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
     </style>
 </head>
 <body>
@@ -116,11 +55,8 @@
         <h2 id="title" style="margin:0;">THE VAULT</h2>
         <button class="btn-mini" style="border:none; color:var(--primary); font-size:10px;" onclick="handleLogout()">Exhume</button>
     </header>
-
     <div class="container" id="app-content"></div>
-
     <button class="fab" id="main-fab" onclick="showFabOptions()">+</button>
-
     <div id="edit-modal" class="modal-bg">
         <div class="modal">
             <h3 id="edit-header" style="color:var(--primary)">Modify Record</h3>
@@ -154,10 +90,11 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
-    const invRef = ref(db, 'inventory/');
+    const invRef = ref(db, 'inventory'); // Removed trailing slash for better pathing
 
     let state = { folders: [] };
     let currentFolderId = null;
+    window.editingTarget = { type: null, idx: null };
 
     onAuthStateChanged(auth, (user) => {
         if (user && user.uid === AUTHORIZED_UID) {
@@ -183,16 +120,25 @@
     function startApp() {
         onValue(invRef, (snap) => {
             const data = snap.val();
-            state = (data && data.folders) ? data : { folders: [] };
+            console.log("Database Raw Data:", data); // THIS HELPS US SEE IF DATA EXISTS
+            
+            // If the database is empty or nested differently, we catch it here
+            if (data && data.folders) {
+                state = data;
+            } else if (Array.isArray(data)) {
+                state = { folders: data };
+            } else {
+                state = { folders: [] };
+            }
+            
             ensureRecentFolder();
             render();
         });
     }
 
     function ensureRecentFolder() {
-        if (!state.folders.some(f => f.id.toString() === 'recent_notes')) {
+        if (!state.folders.some(f => String(f.id) === 'recent_notes')) {
             state.folders.unshift({ id: 'recent_notes', name: 'Recent Spirits', img: '', items: [], permanent: true });
-            sync();
         }
     }
 
@@ -210,7 +156,7 @@
                 const itemsList = (f.items || []).slice(0, 3).map(i => `<span class="preview-item">${i.name}</span>`).join('');
                 content.innerHTML += `
                 <div class="card">
-                    <div class="card-img" style="background-image:url('${f.img}')" onclick="openFolder('${f.id}')"></div>
+                    <div class="card-img" style="background-image:url('${f.img || ''}')" onclick="openFolder('${f.id}')"></div>
                     <div class="card-content" onclick="openFolder('${f.id}')">
                         <div class="card-name">${f.name}</div>
                         <div class="preview-list">${itemsList || 'Awaiting records...'}</div>
@@ -224,13 +170,14 @@
             });
         } else {
             backBtn.classList.remove('hidden');
-            const folder = state.folders.find(f => f.id.toString() === currentFolderId.toString());
+            const folder = state.folders.find(f => String(f.id) === String(currentFolderId));
+            if (!folder) { goBack(); return; }
             document.getElementById('title').innerText = folder.name.toUpperCase();
             content.innerHTML = `<button class="btn-mini" style="width:100%; margin-bottom:20px; border-style:dashed;" onclick="openAddModal('new_i')">+ Summon New Item</button>`;
             (folder.items || []).forEach((item, idx) => {
                 content.innerHTML += `
                 <div class="card">
-                    <div class="card-img" style="background-image:url('${item.img}')"></div>
+                    <div class="card-img" style="background-image:url('${item.img || ''}')"></div>
                     <div class="card-content">
                         <div class="card-name">${item.name}</div>
                     </div>
@@ -245,7 +192,7 @@
     };
 
     window.move = (type, idx, dir) => {
-        let list = (type === 'f') ? state.folders : state.folders.find(f => f.id.toString() === currentFolderId.toString()).items;
+        let list = (type === 'f') ? state.folders : state.folders.find(f => String(f.id) === String(currentFolderId)).items;
         let newIdx = idx + dir;
         if (newIdx < 0 || newIdx >= list.length) return;
         [list[idx], list[newIdx]] = [list[newIdx], list[idx]];
@@ -256,9 +203,7 @@
         if (currentFolderId === null) {
             const opt = confirm("Summon a New Location? (Cancel to add Item to Recents)");
             if (opt) openAddModal('new_f'); else openAddModal('new_i');
-        } else {
-            openAddModal('new_i');
-        }
+        } else { openAddModal('new_i'); }
     }
 
     window.openAddModal = (type) => {
@@ -272,16 +217,12 @@
 
     window.openEditModal = (type, idx) => {
         window.editingTarget = { type, idx };
-        const data = (type === 'f') ? state.folders[idx] : state.folders.find(f => f.id.toString() === currentFolderId.toString()).items[idx];
+        const data = (type === 'f') ? state.folders[idx] : state.folders.find(f => String(f.id) === String(currentFolderId)).items[idx];
         document.getElementById('edit-name').value = data.name;
         document.getElementById('edit-img').value = data.img || '';
         document.getElementById('edit-header').innerText = "Modify Record";
-        
-        if (type === 'f' && state.folders[idx].permanent) {
-            document.getElementById('del-btn').classList.add('hidden');
-        } else {
-            document.getElementById('del-btn').classList.remove('hidden');
-        }
+        if (type === 'f' && state.folders[idx].permanent) { document.getElementById('del-btn').classList.add('hidden'); }
+        else { document.getElementById('del-btn').classList.remove('hidden'); }
         document.getElementById('edit-modal').classList.add('active');
     };
 
@@ -289,19 +230,18 @@
         const name = document.getElementById('edit-name').value;
         const img = document.getElementById('edit-img').value;
         if(!name) return;
-
         if (window.editingTarget.type === 'new_f') {
             state.folders.push({ id: Date.now().toString(), name, img, items: [] });
         } else if (window.editingTarget.type === 'new_i') {
             const targetId = currentFolderId ? currentFolderId.toString() : 'recent_notes';
-            const f = state.folders.find(f => f.id.toString() === targetId);
+            const f = state.folders.find(f => String(f.id) === String(targetId));
             if (!f.items) f.items = [];
             f.items.push({ id: Date.now().toString(), name, img });
         } else if (window.editingTarget.type === 'f') {
             state.folders[window.editingTarget.idx].name = name;
             state.folders[window.editingTarget.idx].img = img;
         } else if (window.editingTarget.type === 'i') {
-            const f = state.folders.find(f => f.id.toString() === currentFolderId.toString());
+            const f = state.folders.find(f => String(f.id) === String(currentFolderId));
             f.items[window.editingTarget.idx].name = name;
             f.items[window.editingTarget.idx].img = img;
         }
@@ -310,15 +250,12 @@
 
     window.confirmDelete = () => {
         if (!confirm("Vanish this record forever?")) return;
-        if (window.editingTarget.type === 'f') {
-            state.folders.splice(window.editingTarget.idx, 1);
-        } else {
-            state.folders.find(f => f.id.toString() === currentFolderId.toString()).items.splice(window.editingTarget.idx, 1);
-        }
+        if (window.editingTarget.type === 'f') { state.folders.splice(window.editingTarget.idx, 1); }
+        else { state.folders.find(f => String(f.id) === String(currentFolderId)).items.splice(window.editingTarget.idx, 1); }
         sync(); closeModals();
     };
 
-    window.openFolder = (id) => { currentFolderId = id.toString(); render(); };
+    window.openFolder = (id) => { currentFolderId = id; render(); };
     window.goBack = () => { currentFolderId = null; render(); };
     window.closeModals = () => document.getElementById('edit-modal').classList.remove('active');
 </script>
