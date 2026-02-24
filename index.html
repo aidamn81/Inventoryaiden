@@ -134,10 +134,10 @@
                 <textarea id="backup-text" rows="8" style="font-family: monospace; font-size: 10px;"></textarea>
             </div>
             <div style="display:flex; gap:10px; margin-top:20px;">
-                <button id="save-btn" class="btn-mini" style="flex:1" onclick="applyEdit()">Inscribe</button>
-                <button id="del-btn" class="btn-mini" style="color:#ff3b30; border-color:#ff3b30;" onclick="confirmDelete()">Vanish</button>
+                <button id="save-btn" class="btn-mini" style="flex:1" onclick="applyEdit()">SAVE</button>
+                <button id="del-btn" class="btn-mini" style="color:#ff3b30; border-color:#ff3b30;" onclick="confirmDelete()">DELETE</button>
             </div>
-            <button class="btn-mini" style="width:100%; margin-top:10px; border-color:#444" onclick="closeModals()">Seal</button>
+            <button class="btn-mini" style="width:100%; margin-top:10px; border-color:#444" onclick="closeModals()">CANCEL</button>
         </div>
     </div>
 </div>
@@ -192,18 +192,10 @@
             if (data && data.folders) state.folders = data.folders;
             else if (Array.isArray(data)) state.folders = data;
             else state.folders = [];
-            
-            ensureRecentFolder();
             render();
         }, (err) => {
-            if(err.code === "PERMISSION_DENIED") alert("Security Rule Error: Path blocked.");
+            if(err.code === "PERMISSION_DENIED") alert("Security Rule Error.");
         });
-    }
-
-    function ensureRecentFolder() {
-        if (!state.folders.some(f => String(f.id) === 'recent_notes')) {
-            state.folders.unshift({ id: 'recent_notes', name: 'Recent Spirits', img: '', items: [], permanent: true });
-        }
     }
 
     function sync() { set(ref(db, 'inventory'), state); }
@@ -237,7 +229,7 @@
             const folder = state.folders.find(f => String(f.id) === String(currentFolderId));
             if(!folder) return goBack();
             document.getElementById('title').innerText = folder.name.toUpperCase();
-            content.innerHTML = `<button class="btn-mini" style="width:100%; margin-bottom:20px; border-style:dashed;" onclick="openAddModal('new_i')">+ Summon Item</button>`;
+            content.innerHTML = `<button class="btn-mini" style="width:100%; margin-bottom:20px; border-style:dashed;" onclick="openAddModal('new_i')">+ ADD NEW ITEM</button>`;
             (folder.items || []).forEach((item, idx) => {
                 content.innerHTML += `
                 <div class="card">
@@ -289,21 +281,18 @@
         const data = type === 'f' ? state.folders[idx] : state.folders.find(f => String(f.id) === String(currentFolderId)).items[idx];
         document.getElementById('edit-name').value = data.name;
         document.getElementById('edit-img').value = data.img || '';
-        
-        // Safety: If it's a folder (f) and marked permanent, hide delete. 
-        // Otherwise, show the 'Vanish' (Delete) button for both folders and items.
-        const isLocked = (type === 'f' && state.folders[idx].permanent);
-        setupModal("Modify Record", false, isLocked);
+        setupModal("Modify Record", false);
     };
 
-    function setupModal(title, isNew, isLocked) {
+    function setupModal(title, isNew) {
         document.getElementById('modal-inputs').classList.remove('hidden');
         document.getElementById('backup-inputs').classList.add('hidden');
         document.getElementById('edit-header').innerText = title;
-        document.getElementById('save-btn').innerText = "Inscribe";
+        document.getElementById('save-btn').innerText = "SAVE";
         document.getElementById('save-btn').onclick = applyEdit;
         
-        if (isNew || isLocked) {
+        // Always show DELETE unless we are creating a brand new item/folder
+        if (isNew) {
             document.getElementById('del-btn').classList.add('hidden');
         } else {
             document.getElementById('del-btn').classList.remove('hidden');
@@ -319,6 +308,7 @@
         if (t.type === 'new_f') state.folders.push({ id: Date.now().toString(), name, img, items: [] });
         else if (t.type === 'new_i') {
             const f = state.folders.find(f => String(f.id) === (currentFolderId || 'recent_notes'));
+            if (!f) return alert("Select a location first");
             if (!f.items) f.items = [];
             f.items.push({ id: Date.now().toString(), name, img });
         } else if (t.type === 'f') { state.folders[t.idx].name = name; state.folders[t.idx].img = img; }
@@ -332,9 +322,7 @@
     window.confirmDelete = () => {
         const t = window.target;
         const label = t.type === 'f' ? "LOCATION" : "ITEM";
-        
-        // Confirmation check for the specific target
-        if (!confirm(`Vanish this ${label} forever?`)) return;
+        if (!confirm(`Are you sure you want to delete this ${label}?`)) return;
         
         if (t.type === 'f') {
             state.folders.splice(t.idx, 1);
@@ -346,7 +334,7 @@
 
     window.showFabOptions = () => {
         if (currentFolderId) openAddModal('new_i');
-        else { if (confirm("New Location?")) openAddModal('new_f'); else openAddModal('new_i'); }
+        else { if (confirm("Create new Location?")) openAddModal('new_f'); else openAddModal('new_i'); }
     };
 
     window.move = (type, idx, dir) => {
