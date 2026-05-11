@@ -76,34 +76,36 @@
         
         .modal-bg { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); display:none; align-items:center; justify-content:center; z-index: 1000; }
         .modal-bg.active { display: flex; }
-        .modal { background: #0a0a0a; padding: 30px; border: 1px solid var(--primary); width: 90%; max-width: 400px; }
+        .modal { background: #0a0a0a; padding: 25px; border: 1px solid var(--primary); width: 92%; max-width: 400px; max-height: 90vh; overflow-y: auto; }
         
-        input[type="text"], textarea { 
-            width: 100%; padding: 14px; margin: 10px 0; border: none; border-bottom: 1px solid var(--primary); 
-            background: #111; color: white; font-size: 16px; border-radius: 4px;
+        label { font-size: 10px; color: var(--primary); font-family: 'Cinzel', serif; display: block; margin-top: 15px; text-transform: uppercase; }
+
+        input[type="text"], select { 
+            width: 100%; padding: 12px; margin: 5px 0; border: none; border-bottom: 1px solid var(--primary); 
+            background: #111; color: white; font-size: 16px; border-radius: 4px; font-family: inherit;
         }
 
-        .file-input-wrapper {
-            margin: 10px 0; padding: 10px; background: #111; border: 1px dashed var(--border);
+        .file-wrapper {
+            margin: 5px 0; padding: 10px; background: #111; border: 1px dashed var(--border);
             text-align: center; border-radius: 4px;
-        }
-        
-        .fab { 
-            position: fixed; bottom: 85px; right: 25px; width: 65px; height: 65px; 
-            background: var(--primary); color: white; border-radius: 50%; border: 2px solid var(--accent); 
-            font-size: 35px; box-shadow: 0 0 20px rgba(139, 0, 0, 0.5); z-index: 99; 
         }
 
         .backup-bar { 
             position: fixed; bottom: 0; width: 100%; background: #000; 
             padding: 15px; display: flex; gap: 10px; border-top: 1px solid var(--primary); z-index: 98;
         }
+
+        .fab { 
+            position: fixed; bottom: 85px; right: 25px; width: 65px; height: 65px; 
+            background: var(--primary); color: white; border-radius: 50%; border: 2px solid var(--accent); 
+            font-size: 35px; box-shadow: 0 0 20px rgba(139, 0, 0, 0.5); z-index: 99; 
+        }
     </style>
 </head>
 <body>
 
 <div id="login-screen">
-    <h2 style="color: var(--primary);">Access Forbidden</h2>
+    <h2 style="color: var(--primary); text-align: center;">Access Forbidden</h2>
     <input type="email" id="auth-email" placeholder="Guardian Email">
     <input type="password" id="auth-pass" placeholder="Secret Key">
     <button class="btn-mini" style="width: 100%; margin-top:10px;" onclick="handleLogin()">Enter</button>
@@ -127,18 +129,28 @@
 
     <div id="edit-modal" class="modal-bg">
         <div class="modal">
-            <h3 id="edit-header" style="color:var(--primary)">Modify Record</h3>
+            <h3 id="edit-header" style="color:var(--primary); margin-top:0;">Modify Record</h3>
+            
             <div id="modal-inputs">
+                <label>Rename</label>
                 <input type="text" id="edit-name" placeholder="Name">
-                <div class="file-input-wrapper">
-                    <label style="display:block; font-size:10px; margin-bottom:5px;">UPLOAD VISUAL</label>
-                    <input type="file" id="edit-file" accept="image/*" style="font-size:12px;">
+                
+                <label>Update Image</label>
+                <div class="file-wrapper">
+                    <input type="file" id="edit-file" accept="image/*" style="font-size:12px; width:100%;">
+                </div>
+
+                <div id="move-container" class="hidden">
+                    <label>Relocate to Folder</label>
+                    <select id="edit-move-folder"></select>
                 </div>
             </div>
-            <div id="backup-inputs" class="hidden">
-                <textarea id="backup-text" rows="8" style="font-family: monospace; font-size: 10px;"></textarea>
+
+            <div id="backup-container" class="hidden">
+                <textarea id="backup-text" rows="10" style="width:100%; background:#111; color:#0f0; font-family:monospace; font-size:10px;"></textarea>
             </div>
-            <div style="display:flex; gap:10px; margin-top:20px;">
+
+            <div style="display:flex; gap:10px; margin-top:25px;">
                 <button id="save-btn" class="btn-mini" style="flex:1" onclick="applyEdit()">SAVE</button>
                 <button id="del-btn" class="btn-mini" style="color:#ff3b30; border-color:#ff3b30;" onclick="confirmDelete()">DELETE</button>
             </div>
@@ -194,9 +206,7 @@
     function startApp() {
         onValue(invRef, (snap) => {
             const data = snap.val();
-            if (data && data.folders) state.folders = data.folders;
-            else if (Array.isArray(data)) state.folders = data;
-            else state.folders = [];
+            state.folders = (data && data.folders) ? data.folders : [];
             render();
         });
     }
@@ -219,19 +229,19 @@
                         <div class="card-name">${f.name}</div>
                     </div>
                     <div class="card-controls">
-                        <button class="ctrl-btn" onclick="move('f', ${idx}, -1)">▲</button>
+                        <button class="ctrl-btn" onclick="moveOrder('f', ${idx}, -1)">▲</button>
                         <button class="ctrl-btn" onclick="openEditModal('f', ${idx})">⚙</button>
-                        <button class="ctrl-btn" onclick="move('f', ${idx}, 1)">▼</button>
+                        <button class="ctrl-btn" onclick="moveOrder('f', ${idx}, 1)">▼</button>
                     </div>
                 </div>`;
             });
         } else {
             backBtn.classList.remove('hidden');
-            const folder = state.folders.find(f => String(f.id) === String(currentFolderId));
-            if(!folder) return goBack();
-            document.getElementById('title').innerText = folder.name.toUpperCase();
-            content.innerHTML = `<button class="btn-mini" style="width:100%; margin-bottom:20px; border-style:dashed;" onclick="openAddModal('new_i')">+ ADD NEW ITEM</button>`;
-            (folder.items || []).forEach((item, idx) => {
+            const f = state.folders.find(folder => String(folder.id) === String(currentFolderId));
+            if(!f) return goBack();
+            document.getElementById('title').innerText = f.name.toUpperCase();
+            content.innerHTML = `<button class="btn-mini" style="width:100%; margin-bottom:20px; border-style:dashed;" onclick="openAddModal('new_i')">+ ADD ITEM</button>`;
+            (f.items || []).forEach((item, idx) => {
                 content.innerHTML += `
                 <div class="card">
                     <div class="card-img" style="background-image:url('${item.img || ''}')"></div>
@@ -239,106 +249,133 @@
                         <div class="card-name">${item.name}</div>
                     </div>
                     <div class="card-controls">
-                        <button class="ctrl-btn" onclick="move('i', ${idx}, -1)">▲</button>
+                        <button class="ctrl-btn" onclick="moveOrder('i', ${idx}, -1)">▲</button>
                         <button class="ctrl-btn" onclick="openEditModal('i', ${idx})">⚙</button>
-                        <button class="ctrl-btn" onclick="move('i', ${idx}, 1)">▼</button>
+                        <button class="ctrl-btn" onclick="moveOrder('i', ${idx}, 1)">▼</button>
                     </div>
                 </div>`;
             });
         }
     };
 
-    // Image to Base64 Logic
-    async function getBase64(file) {
-        return new Promise((resolve, reject) => {
+    async function toBase64(file) {
+        return new Promise((res, rej) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = error => reject(error);
+            reader.onload = () => res(reader.result);
+            reader.onerror = e => rej(e);
         });
     }
 
     window.applyEdit = async () => {
         const name = document.getElementById('edit-name').value;
         const fileInput = document.getElementById('edit-file');
+        const moveSelect = document.getElementById('edit-move-folder');
         if(!name) return;
-        
-        let imgData = null;
-        if(fileInput.files[0]) {
-            imgData = await getBase64(fileInput.files[0]);
-        }
 
+        let imgData = fileInput.files[0] ? await toBase64(fileInput.files[0]) : null;
         const t = window.target;
+
         if (t.type === 'new_f') {
             state.folders.push({ id: Date.now().toString(), name, img: imgData || '', items: [] });
         } else if (t.type === 'new_i') {
-            let f = currentFolderId ? state.folders.find(f => String(f.id) === String(currentFolderId)) : state.folders[0];
-            if (!f) { f = { id: 'inbox', name: 'Inbox', img: '', items: [] }; state.folders.push(f); }
+            let f = state.folders.find(folder => String(folder.id) === String(currentFolderId)) || state.folders[0];
+            if (!f) { f = { id: Date.now().toString(), name: 'Inbox', img: '', items: [] }; state.folders.push(f); }
             if (!f.items) f.items = [];
             f.items.push({ id: Date.now().toString(), name, img: imgData || '' });
         } else if (t.type === 'f') {
             state.folders[t.idx].name = name;
-            if(imgData) state.folders[t.idx].img = imgData;
+            if (imgData) state.folders[t.idx].img = imgData;
         } else if (t.type === 'i') {
-            const f = state.folders.find(f => String(f.id) === String(currentFolderId));
-            f.items[t.idx].name = name;
-            if(imgData) f.items[t.idx].img = imgData;
+            const source = state.folders.find(folder => String(folder.id) === String(currentFolderId));
+            const item = source.items[t.idx];
+            item.name = name;
+            if (imgData) item.img = imgData;
+
+            // Move Logic
+            if (moveSelect.value !== String(currentFolderId)) {
+                const dest = state.folders.find(folder => String(folder.id) === moveSelect.value);
+                if (!dest.items) dest.items = [];
+                dest.items.push(item);
+                source.items.splice(t.idx, 1);
+            }
         }
-        
         sync(); closeModals();
     };
 
-    window.openBackupModal = (mode) => {
-        document.getElementById('modal-inputs').classList.add('hidden');
-        document.getElementById('backup-inputs').classList.remove('hidden');
-        document.getElementById('del-btn').classList.add('hidden');
-        const area = document.getElementById('backup-text');
-        if (mode === 'export') {
-            area.value = JSON.stringify(state.folders);
-        } else {
-            area.value = "";
-            document.getElementById('save-btn').onclick = () => {
-                state.folders = JSON.parse(area.value); sync(); closeModals();
-            };
-        }
-        document.getElementById('edit-modal').classList.add('active');
-    };
-
-    window.openAddModal = (type) => { window.target = { type }; setupModal("New Entry", true); };
     window.openEditModal = (type, idx) => {
         window.target = { type, idx };
         const data = type === 'f' ? state.folders[idx] : state.folders.find(f => String(f.id) === String(currentFolderId)).items[idx];
         document.getElementById('edit-name').value = data.name;
-        setupModal("Edit Entry", false);
+        document.getElementById('edit-file').value = "";
+        
+        const moveBox = document.getElementById('move-container');
+        if (type === 'i') {
+            moveBox.classList.remove('hidden');
+            const select = document.getElementById('edit-move-folder');
+            select.innerHTML = state.folders.map(f => `<option value="${f.id}" ${String(f.id) === String(currentFolderId) ? 'selected' : ''}>${f.name}</option>`).join('');
+        } else {
+            moveBox.classList.add('hidden');
+        }
+        
+        document.getElementById('edit-header').innerText = "Modify Record";
+        document.getElementById('del-btn').classList.remove('hidden');
+        document.getElementById('edit-modal').classList.add('active');
     };
 
-    function setupModal(title, isNew) {
-        document.getElementById('modal-inputs').classList.remove('hidden');
-        document.getElementById('backup-inputs').classList.add('hidden');
-        document.getElementById('edit-header').innerText = title;
+    window.openAddModal = (type) => {
+        window.target = { type };
+        document.getElementById('edit-name').value = "";
         document.getElementById('edit-file').value = "";
-        isNew ? document.getElementById('del-btn').classList.add('hidden') : document.getElementById('del-btn').classList.remove('hidden');
+        document.getElementById('move-container').classList.add('hidden');
+        document.getElementById('edit-header').innerText = "New Record";
+        document.getElementById('del-btn').classList.add('hidden');
         document.getElementById('edit-modal').classList.add('active');
-    }
+    };
 
     window.confirmDelete = () => {
-        if (!confirm("Vanish this forever?")) return;
+        if (!confirm("Vanish this entry forever?")) return;
         const t = window.target;
         if (t.type === 'f') state.folders.splice(t.idx, 1);
         else state.folders.find(f => String(f.id) === String(currentFolderId)).items.splice(t.idx, 1);
         sync(); closeModals();
     };
 
-    window.showFabOptions = () => { if (currentFolderId) openAddModal('new_i'); else openAddModal('new_f'); };
-    window.move = (type, idx, dir) => {
+    window.moveOrder = (type, idx, dir) => {
         let list = type === 'f' ? state.folders : state.folders.find(f => String(f.id) === String(currentFolderId)).items;
-        let nIdx = idx + dir; if (nIdx >= 0 && nIdx < list.length) {
-            [list[idx], list[nIdx]] = [list[nIdx], list[idx]]; sync();
+        let nIdx = idx + dir;
+        if (nIdx >= 0 && nIdx < list.length) {
+            [list[idx], list[nIdx]] = [list[nIdx], list[idx]];
+            sync();
         }
     };
+
+    window.openBackupModal = (mode) => {
+        document.getElementById('modal-inputs').classList.add('hidden');
+        document.getElementById('backup-container').classList.remove('hidden');
+        const area = document.getElementById('backup-text');
+        if (mode === 'export') {
+            area.value = JSON.stringify(state.folders);
+            document.getElementById('save-btn').innerText = "DONE";
+            document.getElementById('save-btn').onclick = closeModals;
+        } else {
+            area.value = "";
+            document.getElementById('save-btn').innerText = "RESTORE";
+            document.getElementById('save-btn').onclick = () => {
+                try { state.folders = JSON.parse(area.value); sync(); closeModals(); } catch(e) { alert("Invalid data"); }
+            };
+        }
+        document.getElementById('edit-modal').classList.add('active');
+    };
+
+    window.showFabOptions = () => currentFolderId ? openAddModal('new_i') : openAddModal('new_f');
     window.openFolder = (id) => { currentFolderId = id; render(); };
     window.goBack = () => { currentFolderId = null; render(); };
-    window.closeModals = () => document.getElementById('edit-modal').classList.remove('active');
+    window.closeModals = () => {
+        document.getElementById('edit-modal').classList.remove('active');
+        document.getElementById('modal-inputs').classList.remove('hidden');
+        document.getElementById('backup-container').classList.add('hidden');
+    };
 </script>
 </body>
 </html>
