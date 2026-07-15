@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>The Vault</title>
     
-    <link rel="apple-touch-icon" href="https://filedn.eu/lmLPHhnmVT38F0vdFViDpAf/Inventory%20App/inventory.png">
+    <link class="apple-touch-icon" href="https://filedn.eu/lmLPHhnmVT38F0vdFViDpAf/Inventory%20App/inventory.png">
     <link rel="icon" type="image/png" href="https://filedn.eu/lmLPHhnmVT38F0vdFViDpAf/Inventory%20App/inventory.png">
     
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -243,6 +243,22 @@
     let currentFolderId = null;
     window.target = {};
 
+    // Check if initial state is already replaced to prevent duplication issues on reloads
+    if (!history.state) {
+        history.replaceState({ folderId: null }, "", "");
+    }
+
+    // Listen to browser Back/Forward navigation buttons
+    window.addEventListener('popstate', (event) => {
+        if (event.state && event.state.folderId !== undefined) {
+            currentFolderId = event.state.folderId;
+            render();
+        } else {
+            currentFolderId = null;
+            render();
+        }
+    });
+
     onAuthStateChanged(auth, (user) => {
         if (user && user.uid === AUTHORIZED_UID) {
             document.getElementById('login-screen').classList.add('hidden');
@@ -440,8 +456,19 @@
     };
 
     window.showFabOptions = () => currentFolderId ? openAddModal('new_i') : openAddModal('new_f');
-    window.openFolder = (id) => { currentFolderId = id; render(); };
-    window.goBack = () => { currentFolderId = null; render(); };
+    
+    // Updated Folder Entry pushes a new history state
+    window.openFolder = (id) => { 
+        currentFolderId = id; 
+        history.pushState({ folderId: id }, "", "");
+        render(); 
+    };
+    
+    // Return triggers standard history back behavior
+    window.goBack = () => { 
+        history.back(); 
+    };
+    
     window.closeModals = () => {
         document.getElementById('edit-modal').classList.remove('active');
         document.getElementById('modal-inputs').classList.remove('hidden');
