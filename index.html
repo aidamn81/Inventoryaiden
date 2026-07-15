@@ -44,7 +44,7 @@
 
         .container { padding: 15px; margin-top: 20px; padding-bottom: 130px; }
 
-        /* Unified Grid for both Locations & Items (Cubes with Rounded Edges) */
+        /* Unified Grid for Locations (Cubes with Rounded Edges) */
         .cubes-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -63,6 +63,25 @@
             }
         }
 
+        /* 50% Smaller Grid specifically for Items inside Locations */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        @media (min-width: 600px) {
+            .items-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+        }
+
+        @media (min-width: 900px) {
+            .items-grid {
+                grid-template-columns: repeat(8, 1fr);
+            }
+        }
+
         /* Cubes with Rounded Edges styling */
         .vault-cube {
             background: var(--card-bg);
@@ -74,6 +93,11 @@
             border: 1px solid var(--border);
             box-shadow: 0 4px 15px rgba(139, 0, 0, 0.1);
             position: relative;
+        }
+
+        /* Slightly tighter corners and controls for smaller items */
+        .items-grid .vault-cube {
+            border-radius: 10px;
         }
 
         .cube-img-area {
@@ -93,6 +117,11 @@
             border-top: 1px solid var(--border);
         }
 
+        /* Scale label text size slightly down for smaller item cubes */
+        .items-grid .cube-overlay-label {
+            padding: 6px 4px;
+        }
+
         .location-name, .card-name {
             font-weight: 700;
             font-size: 13px;
@@ -101,6 +130,10 @@
             overflow: hidden;
             text-overflow: ellipsis;
             margin: 0;
+        }
+
+        .items-grid .card-name {
+            font-size: 10px;
         }
 
         .cube-controls {
@@ -116,6 +149,15 @@
             z-index: 5;
         }
 
+        /* Smaller overlay controls for items so they don't block the visual */
+        .items-grid .cube-controls {
+            top: 3px;
+            right: 3px;
+            padding: 2px;
+            border-radius: 4px;
+            gap: 2px;
+        }
+
         .cube-ctrl-btn {
             background: none;
             border: none;
@@ -123,6 +165,11 @@
             font-size: 12px;
             cursor: pointer;
             padding: 2px 4px;
+        }
+
+        .items-grid .cube-ctrl-btn {
+            font-size: 9px;
+            padding: 1px 2px;
         }
 
         .hidden { display: none !important; }
@@ -297,7 +344,7 @@
             backBtn.classList.add('hidden');
             document.getElementById('title').innerText = "THE VAULT";
             
-            // Render Locations as beautiful Cubes
+            // Render Locations as standard beautiful Cubes
             let gridHtml = '<div class="cubes-grid">';
             state.folders.forEach((f, idx) => {
                 gridHtml += `
@@ -323,9 +370,9 @@
             document.getElementById('title').innerText = f.name.toUpperCase();
             
             let gridHtml = `<button class="btn-mini" style="width:100%; margin-bottom:20px; border-style:dashed;" onclick="openAddModal('new_i')">+ ADD ITEM</button>`;
-            gridHtml += '<div class="cubes-grid">';
+            gridHtml += '<div class="items-grid">'; // Render item cubes 50% smaller inside items-grid
             
-            // Render Items inside Locations as uniform Cubes
+            // Render Items inside Locations as uniform but smaller Cubes
             (f.items || []).forEach((item, idx) => {
                 gridHtml += `
                 <div class="vault-cube">
