@@ -44,6 +44,49 @@
 
         .container { padding: 15px; margin-top: 20px; padding-bottom: 130px; }
 
+        /* Search Bar Styling */
+        .search-container {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 40px 12px 15px;
+            background: rgba(10, 10, 10, 0.9);
+            border: 1px solid var(--border);
+            border-bottom: 2px solid var(--primary);
+            border-radius: 8px;
+            color: white;
+            font-family: 'Quicksand', sans-serif;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(139, 0, 0, 0.3);
+        }
+
+        .search-clear-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0;
+            display: none;
+        }
+
+        .search-clear-btn.active {
+            display: block;
+        }
+
         /* Unified Grid for Locations (Cubes with Rounded Edges) */
         .cubes-grid {
             display: grid;
@@ -136,6 +179,19 @@
             font-size: 10px;
         }
 
+        /* Gothic Found-In Location Badge during Search */
+        .found-location-badge {
+            font-size: 8px;
+            color: var(--primary);
+            text-transform: uppercase;
+            font-weight: bold;
+            margin: 2px 0 0 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            letter-spacing: 0.5px;
+        }
+
         .cube-controls {
             position: absolute;
             top: 5px;
@@ -224,7 +280,15 @@
         <button class="btn-mini" style="border:none; color:var(--primary);" onclick="handleLogout()">Exit</button>
     </header>
 
-    <div class="container" id="app-content"></div>
+    <div class="container">
+        <!-- Persistent Main Page Search Input -->
+        <div id="search-wrapper" class="search-container">
+            <input type="text" id="search-bar" class="search-input" placeholder="Search locations or items..." oninput="handleSearch()">
+            <button id="search-clear" class="search-clear-btn" onclick="clearSearch()">×</button>
+        </div>
+
+        <div id="app-content"></div>
+    </div>
 
     <div class="backup-bar">
         <button class="btn-mini" style="flex:1; border-color:#444;" onclick="openBackupModal('export')">Backup</button>
@@ -288,6 +352,7 @@
 
     let state = { folders: [] };
     let currentFolderId = null;
+    let searchQuery = "";
     window.target = {};
 
     // Check if initial state is already replaced to prevent duplication issues on reloads
@@ -335,44 +400,136 @@
 
     function sync() { set(ref(db, 'inventory'), state); }
 
+    window.handleSearch = () => {
+        const input = document.getElementById('search-bar');
+        const clearBtn = document.getElementById('search-clear');
+        searchQuery = input.value.trim().toLowerCase();
+        
+        if (searchQuery) {
+            clearBtn.classList.add('active');
+        } else {
+            clearBtn.classList.remove('active');
+        }
+        render();
+    };
+
+    window.clearSearch = () => {
+        const input = document.getElementById('search-bar');
+        input.value = "";
+        searchQuery = "";
+        document.getElementById('search-clear').classList.remove('active');
+        render();
+    };
+
     window.render = () => {
         const content = document.getElementById('app-content');
         content.innerHTML = '';
         const backBtn = document.getElementById('back-btn');
+        const searchWrapper = document.getElementById('search-wrapper');
 
         if (currentFolderId === null) {
             backBtn.classList.add('hidden');
             document.getElementById('title').innerText = "THE VAULT";
+            searchWrapper.classList.remove('hidden'); // Show search on main page
             
-            // Render Locations as standard beautiful Cubes
-            let gridHtml = '<div class="cubes-grid">';
-            state.folders.forEach((f, idx) => {
-                gridHtml += `
-                <div class="vault-cube">
-                    <div class="cube-controls">
-                        <button class="cube-ctrl-btn" onclick="moveOrder('f', ${idx}, -1); event.stopPropagation();">▲</button>
-                        <button class="cube-ctrl-btn" onclick="openEditModal('f', ${idx}); event.stopPropagation();">⚙</button>
-                        <button class="cube-ctrl-btn" onclick="moveOrder('f', ${idx}, 1); event.stopPropagation();">▼</button>
-                    </div>
-                    <div class="cube-img-area" style="background-image:url('${f.img || ''}')" onclick="openFolder('${f.id}')"></div>
-                    <div class="cube-overlay-label" onclick="openFolder('${f.id}')">
-                        <p class="location-name">${f.name}</p>
-                    </div>
-                </div>`;
-            });
-            gridHtml += '</div>';
-            content.innerHTML = gridHtml;
+            if (searchQuery !== "") {
+                // Perform a hybrid search for both Folders and their internal items
+                let matchingFolders = state.folders.filter(f => f.name.toLowerCase().includes(searchQuery));
+                let matchingItems = [];
+                
+                state.folders.forEach(f => {
+                    (f.items || []).forEach(item => {
+                        if (item.name.toLowerCase().includes(searchQuery)) {
+                            matchingItems.push({
+                                ...item,
+                                folderId: f.id,
+                                folderName: f.name
+                            });
+                        }
+                    });
+                });
+
+                if (matchingFolders.length === 0 && matchingItems.length === 0) {
+                    content.innerHTML = `<p style="text-align:center; color: #555; margin-top:40px;">No relics match your query.</p>`;
+                    return;
+                }
+
+                let gridHtml = '';
+
+                // Show matching folders first
+                if (matchingFolders.length > 0) {
+                    gridHtml += `<h3 style="color: var(--primary); font-size: 14px; margin-bottom: 10px;">Matching Locations</h3>`;
+                    gridHtml += '<div class="cubes-grid" style="margin-bottom: 30px;">';
+                    matchingFolders.forEach((f) => {
+                        // Find the original index of this folder in state.folders
+                        const origIdx = state.folders.findIndex(origF => origF.id === f.id);
+                        gridHtml += `
+                        <div class="vault-cube">
+                            <div class="cube-controls">
+                                <button class="cube-ctrl-btn" onclick="moveOrder('f', ${origIdx}, -1); event.stopPropagation();">▲</button>
+                                <button class="cube-ctrl-btn" onclick="openEditModal('f', ${origIdx}); event.stopPropagation();">⚙</button>
+                                <button class="cube-ctrl-btn" onclick="moveOrder('f', ${origIdx}, 1); event.stopPropagation();">▼</button>
+                            </div>
+                            <div class="cube-img-area" style="background-image:url('${f.img || ''}')" onclick="openFolder('${f.id}')"></div>
+                            <div class="cube-overlay-label" onclick="openFolder('${f.id}')">
+                                <p class="location-name">${f.name}</p>
+                            </div>
+                        </div>`;
+                    });
+                    gridHtml += '</div>';
+                }
+
+                // Show matching items inside a 50% smaller items layout
+                if (matchingItems.length > 0) {
+                    gridHtml += `<h3 style="color: var(--primary); font-size: 14px; margin-bottom: 10px;">Found Items</h3>`;
+                    gridHtml += '<div class="items-grid">';
+                    matchingItems.forEach((item) => {
+                        gridHtml += `
+                        <div class="vault-cube" onclick="openFolder('${item.folderId}')" style="cursor:pointer;">
+                            <div class="cube-img-area" style="background-image:url('${item.img || ''}')"></div>
+                            <div class="cube-overlay-label">
+                                <p class="card-name">${item.name}</p>
+                                <p class="found-location-badge">${item.folderName}</p>
+                            </div>
+                        </div>`;
+                    });
+                    gridHtml += '</div>';
+                }
+
+                content.innerHTML = gridHtml;
+
+            } else {
+                // Standard location display
+                let gridHtml = '<div class="cubes-grid">';
+                state.folders.forEach((f, idx) => {
+                    gridHtml += `
+                    <div class="vault-cube">
+                        <div class="cube-controls">
+                            <button class="cube-ctrl-btn" onclick="moveOrder('f', ${idx}, -1); event.stopPropagation();">▲</button>
+                            <button class="cube-ctrl-btn" onclick="openEditModal('f', ${idx}); event.stopPropagation();">⚙</button>
+                            <button class="cube-ctrl-btn" onclick="moveOrder('f', ${idx}, 1); event.stopPropagation();">▼</button>
+                        </div>
+                        <div class="cube-img-area" style="background-image:url('${f.img || ''}')" onclick="openFolder('${f.id}')"></div>
+                        <div class="cube-overlay-label" onclick="openFolder('${f.id}')">
+                            <p class="location-name">${f.name}</p>
+                        </div>
+                    </div>`;
+                });
+                gridHtml += '</div>';
+                content.innerHTML = gridHtml;
+            }
             
         } else {
             backBtn.classList.remove('hidden');
+            searchWrapper.classList.add('hidden'); // Hide search when viewing a specific location
+            
             const f = state.folders.find(folder => String(folder.id) === String(currentFolderId));
             if(!f) return goBack();
             document.getElementById('title').innerText = f.name.toUpperCase();
             
             let gridHtml = `<button class="btn-mini" style="width:100%; margin-bottom:20px; border-style:dashed;" onclick="openAddModal('new_i')">+ ADD ITEM</button>`;
-            gridHtml += '<div class="items-grid">'; // Render item cubes 50% smaller inside items-grid
+            gridHtml += '<div class="items-grid">'; 
             
-            // Render Items inside Locations as uniform but smaller Cubes
             (f.items || []).forEach((item, idx) => {
                 gridHtml += `
                 <div class="vault-cube">
