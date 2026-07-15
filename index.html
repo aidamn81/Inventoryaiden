@@ -34,7 +34,7 @@
             overflow-x: hidden;
         }
 
-        h2, h3, .card-name { font-family: 'Cinzel', serif; letter-spacing: 1px; }
+        h2, h3, .card-name, .location-name { font-family: 'Cinzel', serif; letter-spacing: 1px; }
 
         header { 
             padding: 20px; display: flex; justify-content: space-between; align-items: center; 
@@ -44,6 +44,88 @@
 
         .container { padding: 15px; margin-top: 20px; padding-bottom: 130px; }
 
+        /* Grid for Locations (Cubes with Rounded Edges) */
+        .locations-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        @media (min-width: 600px) {
+            .locations-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (min-width: 900px) {
+            .locations-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        /* Cubes with Rounded Edges styling */
+        .location-cube {
+            background: var(--card-bg);
+            border-radius: 16px;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 15px rgba(139, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .cube-img-area {
+            flex: 1;
+            background-size: cover;
+            background-position: center;
+            background-color: #111;
+            position: relative;
+        }
+
+        .cube-overlay-label {
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            padding: 10px;
+            text-align: center;
+            border-top: 1px solid var(--border);
+        }
+
+        .location-name {
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--accent);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin: 0;
+        }
+
+        .cube-controls {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: flex;
+            gap: 4px;
+            background: rgba(0,0,0,0.8);
+            border-radius: 8px;
+            padding: 4px;
+            border: 1px solid var(--border);
+            z-index: 5;
+        }
+
+        .cube-ctrl-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 12px;
+            cursor: pointer;
+            padding: 2px 4px;
+        }
+
+        /* Horizontal Card Styling for Items inside a Location */
         .card {
             background: var(--card-bg); border-radius: 8px; margin-bottom: 20px;
             display: flex; align-items: center; overflow: hidden; 
@@ -221,20 +303,26 @@
         if (currentFolderId === null) {
             backBtn.classList.add('hidden');
             document.getElementById('title').innerText = "THE VAULT";
+            
+            // Render Locations as beautiful Cubes next to each other
+            let gridHtml = '<div class="locations-grid">';
             state.folders.forEach((f, idx) => {
-                content.innerHTML += `
-                <div class="card">
-                    <div class="card-img" style="background-image:url('${f.img || ''}')" onclick="openFolder('${f.id}')"></div>
-                    <div class="card-content" onclick="openFolder('${f.id}')">
-                        <div class="card-name">${f.name}</div>
+                gridHtml += `
+                <div class="location-cube">
+                    <div class="cube-controls">
+                        <button class="cube-ctrl-btn" onclick="moveOrder('f', ${idx}, -1); event.stopPropagation();">▲</button>
+                        <button class="cube-ctrl-btn" onclick="openEditModal('f', ${idx}); event.stopPropagation();">⚙</button>
+                        <button class="cube-ctrl-btn" onclick="moveOrder('f', ${idx}, 1); event.stopPropagation();">▼</button>
                     </div>
-                    <div class="card-controls">
-                        <button class="ctrl-btn" onclick="moveOrder('f', ${idx}, -1)">▲</button>
-                        <button class="ctrl-btn" onclick="openEditModal('f', ${idx})">⚙</button>
-                        <button class="ctrl-btn" onclick="moveOrder('f', ${idx}, 1)">▼</button>
+                    <div class="cube-img-area" style="background-image:url('${f.img || ''}')" onclick="openFolder('${f.id}')"></div>
+                    <div class="cube-overlay-label" onclick="openFolder('${f.id}')">
+                        <p class="location-name">${f.name}</p>
                     </div>
                 </div>`;
             });
+            gridHtml += '</div>';
+            content.innerHTML = gridHtml;
+            
         } else {
             backBtn.classList.remove('hidden');
             const f = state.folders.find(folder => String(folder.id) === String(currentFolderId));
