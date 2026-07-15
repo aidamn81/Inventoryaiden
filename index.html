@@ -40,6 +40,13 @@
             padding: 20px; display: flex; justify-content: space-between; align-items: center; 
             background: rgba(0,0,0,0.9); border-bottom: 1px solid var(--primary);
             position: sticky; top: 0; z-index: 100;
+            gap: 10px;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 8px;
+            align-items: center;
         }
 
         .container { padding: 15px; margin-top: 20px; padding-bottom: 130px; }
@@ -138,9 +145,11 @@
             position: relative;
         }
 
-        /* Slightly tighter corners and controls for smaller items */
+        /* Allow height to grow dynamically for smaller items if text wraps, breaking absolute aspect ratio locks */
         .items-grid .vault-cube {
             border-radius: 10px;
+            aspect-ratio: auto;
+            min-height: 100px;
         }
 
         .cube-img-area {
@@ -149,6 +158,12 @@
             background-position: center;
             background-color: #111;
             position: relative;
+        }
+
+        /* Force image area to retain a visual block even when the container expands vertically */
+        .items-grid .cube-img-area {
+            aspect-ratio: 1.2 / 1;
+            flex: none;
         }
 
         .cube-overlay-label {
@@ -163,9 +178,24 @@
         /* Scale label text size slightly down for smaller item cubes */
         .items-grid .cube-overlay-label {
             padding: 6px 4px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
-        .location-name, .card-name {
+        .location-name {
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--accent);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin: 0;
+        }
+
+        /* Allow items to break lines and display full text wrap */
+        .card-name {
             font-weight: 700;
             font-size: 13px;
             color: var(--accent);
@@ -176,7 +206,12 @@
         }
 
         .items-grid .card-name {
-            font-size: 10px;
+            font-size: 9px;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
+            line-height: 1.2;
+            word-break: break-word;
         }
 
         /* Gothic Found-In Location Badge during Search */
@@ -275,8 +310,11 @@
 
 <div id="app-body" class="hidden">
     <header>
-        <button id="back-btn" class="btn-mini hidden" onclick="goBack()">← Return</button>
-        <h2 id="title">THE VAULT</h2>
+        <div class="header-nav">
+            <button id="back-btn" class="btn-mini hidden" onclick="goBack()">← Return</button>
+            <button id="home-btn" class="btn-mini hidden" style="border-color: var(--accent); color: var(--accent);" onclick="goHome()">Home</button>
+        </div>
+        <h2 id="title" style="margin: 0; flex-grow: 1; text-align: center;">THE VAULT</h2>
         <button class="btn-mini" style="border:none; color:var(--primary);" onclick="handleLogout()">Exit</button>
     </header>
 
@@ -425,10 +463,12 @@
         const content = document.getElementById('app-content');
         content.innerHTML = '';
         const backBtn = document.getElementById('back-btn');
+        const homeBtn = document.getElementById('home-btn');
         const searchWrapper = document.getElementById('search-wrapper');
 
         if (currentFolderId === null) {
             backBtn.classList.add('hidden');
+            homeBtn.classList.add('hidden');
             document.getElementById('title').innerText = "THE VAULT";
             searchWrapper.classList.remove('hidden'); // Show search on main page
             
@@ -521,6 +561,7 @@
             
         } else {
             backBtn.classList.remove('hidden');
+            homeBtn.classList.remove('hidden');
             searchWrapper.classList.add('hidden'); // Hide search when viewing a specific location
             
             const f = state.folders.find(folder => String(folder.id) === String(currentFolderId));
@@ -671,6 +712,13 @@
     // Return triggers standard history back behavior
     window.goBack = () => { 
         history.back(); 
+    };
+
+    // Return to top level cleanly updating browser history
+    window.goHome = () => {
+        currentFolderId = null;
+        history.pushState({ folderId: null }, "", "");
+        render();
     };
     
     window.closeModals = () => {
